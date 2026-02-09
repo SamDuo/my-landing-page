@@ -1,0 +1,44 @@
+{
+  "publications": [
+    {
+      "title": "Differentially Private Graph Neural Networks: Shortest-Path Approximation",
+      "authors": "Duong, Q.",
+      "year": 2025,
+      "type": "Technical Report",
+      "details": "Implements DP-SGD-trained GNNs on grid, wheel, and scale-free graphs; benchmarks path-length estimation accuracy, fairness gaps, and robustness under varying privacy budgets.",
+      "venue": "2025"
+    },
+    {
+      "title": "Property-Level Analytics Engine for Atlanta Urban Risk Assessment",
+      "authors": "Duong, Q. et al.",
+      "year": 2025,
+      "type": "Research Project",
+      "details": "Constructed tract-level database (N=311; 118k+ incidents) integrating crime, ACS, and built-environment features. Detected strong spatial autocorrelation (Moran's I = 0.559) and trained spatial models.",
+      "venue": "Center for Urban Resilience & Analytics, Georgia Tech"
+    },
+    {
+      "title": "Social Media Crime Sentiment Modeling: A BERT-Based Approach",
+      "authors": "Duong, Q.",
+      "year": 2025,
+      "type": "Research Project",
+      "details": "Collected 200k+ Reddit posts on crime; built NLP pipeline with BERT-based sentiment classifiers. Produced visualizations revealing negative sentiment spikes on weekday mornings/evenings.",
+      "venue": "Ongoing Research"
+    },
+    {
+      "title": "Agentic RAG System with NVIDIA NIM & LangChain",
+      "authors": "Duong, Q.",
+      "year": 2025,
+      "type": "Research Project",
+      "details": "Engineered an agentic RAG system with NVIDIA NIM-hosted LLaMA3-70B, document chunking, and FAISS retrieval. Implemented evaluation harnesses and deployed interactive demo.",
+      "venue": "Portfolio Project"
+    },
+    {
+      "title": "Multi-Agent RAG Chatbot for Youth Substance-Abuse Prevention (1st Place)",
+      "authors": "Duong, Q. (Lead)",
+      "year": 2025,
+      "type": "Competition Winner",
+      "details": "Led development of multi-agent RAG chatbot integrating retrieval, summarization, and planning agents producing clinician-ready insights.",
+      "venue": "TAG Data Challenge 2025"
+    }
+  ]
+}
