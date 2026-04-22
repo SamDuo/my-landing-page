@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlanta on the Downtown Connector — A Regression Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <article>
+        <header class="hero">
+            <p class="kicker">Regression Analysis / Atlanta</p>
+            <h1>The Shape of a Commute, In Atlanta</h1>
+            <p class="dek">I took the same analysis I worked on with a team for I-94 in Minneapolis and ran it on 35 days of hourly data from the Downtown Connector. The story holds, with Atlanta flourishes. Here is how it looked, one model at a time.</p>
+            <p class="byline">Quan Duong &middot; Independent follow-up to the ISyE 6414 group project</p>
+        </header>
+
+        <section class="prose">
+            <p class="lede">The I-85 sensor just north of the I-75/85 split is one of the busiest traffic counters in the Atlanta region. Over 35 days in late spring 2025, from April 19 to May 23, it recorded 840 hourly observations of southbound traffic.</p>
+            <blockquote class="pullquote-text">Would the same modeling approach that worked on Minneapolis I-94 work here? And would the answer be the same?</blockquote>
+            <p>Short version: yes on both counts. The story is cleaner than I expected.</p>
+        </section>
+
+        <aside class="pullnumber">
+            <span class="pn-big">840</span>
+            <span class="pn-label">hourly observations<br>station 121-5969, I-85 SB</span>
+        </aside>
+
+        <section class="prose">
+            <h2>The raw data</h2>
+            <p>Every dot below is a single hour of southbound volume. No cleaning was needed for duplicates in this window, though a longer pull from the Georgia Department of Transportation portal would almost certainly have some.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="raw"></div>
+            <figcaption><strong>Fig. 1 &mdash;</strong> Every hourly observation for 35 days on Atlanta I-85 southbound. Volumes peak near 10,000 vehicles per hour at evening rush, which is substantially higher than what the Minneapolis sensor saw.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <h2>The weekly pulse</h2>
+            <p>Zoom into a single week and the familiar rhythm appears. Sharp weekday spikes, softer weekend humps. The pattern is unmistakable. Weekends are shaded in orange.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="line"></div>
+            <figcaption><strong>Fig. 2 &mdash;</strong> Seven days in May. The weekday peaks reach far higher than the weekend ones. Notice the asymmetric morning and evening peaks, more pronounced than in Minneapolis.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <h2>The average day</h2>
+            <p>Fold all 35 days onto a single 24 hour axis and the bimodal curve is just as sharp as its Minneapolis counterpart. A morning peak around 7 AM and a bigger evening peak around 5 PM. The Atlanta curve has a taller afternoon shoulder, which suggests more midday commercial traffic than Minneapolis experiences.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="daily"></div>
+            <figcaption><strong>Fig. 3 &mdash;</strong> Mean traffic volume by hour. The PM rush is notably taller than the AM rush. Overnight volumes drop near 1,000 vehicles per hour, still higher than Minneapolis's deep troughs below 100.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <p>This is the single shape that drives the entire regression. A straight-line model cannot fit a two-peaked curve, so we will need hour as a factor.</p>
+
+            <h2>Weekday vs weekend</h2>
+            <p>Split by weekday and weekend. Weekday keeps the sharp rush peaks. Weekend flattens, with a single gentle hill near midday that rises earlier and falls later than Minneapolis weekends.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="split"></div>
+            <figcaption><strong>Fig. 4 &mdash;</strong> Weekday (blue) versus weekend (orange). Atlanta's weekend curve is flatter and more midday-centered than Minneapolis's, consistent with heavy suburban-to-urban weekend traffic.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <p>The interaction term <code>hour_f &times; weekend_indicator</code> will capture this. In Minneapolis it lifted the model from 0.85 to 0.95. In Atlanta, the same move takes us from 0.87 to 0.97.</p>
+
+            <h2>How do I measure a good model?</h2>
+            <p>Adjusted R-squared is the main scorecard: what fraction of the variation in traffic does the model actually explain? A score of 0.22 means the model misses 78 percent of the reasons traffic goes up and down. A score of 0.98 means it captures nearly everything. Adjusted R-squared also penalizes dumping unnecessary variables into the model, which keeps the scorecard honest.</p>
+        </section>
+
+        <aside class="pullnumber">
+            <span class="pn-big">0.23 &rarr; 0.98</span>
+            <span class="pn-label">Adjusted R&sup2;<br>Model 1 to Model 5</span>
+        </aside>
+
+        <section class="prose">
+            <h2>Five models, one scorecard</h2>
+            <p>Each model adds exactly one idea to the previous one. That discipline makes the comparison interpretable.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="models"></div>
+            <figcaption><strong>Fig. 5 &mdash;</strong> Adjusted R&sup2; across five models fit on Atlanta data. The pattern mirrors Minneapolis: hour as a factor is the biggest jump, the weekday interaction adds the next, and the one-hour lag finishes the job.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <p><strong>Model 1</strong> treats <code>hour</code> as a plain number. It fits a straight line and misses both rush peaks. Adjusted R&sup2; = 0.23.</p>
+            <p><strong>Model 2</strong> treats <code>hour</code> as a factor with 24 separate effects. The curve now traces rush hours. 0.87.</p>
+            <p><strong>Model 3</strong> adds the <code>hour_f &times; weekend_indicator</code> interaction. 0.97.</p>
+            <p><strong>Model 4</strong> takes the log of traffic volume as a partial fix for residual fan-out at high volumes. 0.97.</p>
+            <p><strong>Model 5</strong> adds the previous hour's volume as a predictor, which largely resolves autocorrelation. 0.98.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="fits"></div>
+            <figcaption><strong>Fig. 6 &mdash;</strong> Model 1, Model 2, and Model 3 predictions overlaid on hourly averages. The straight line on the left is Model 1 missing both peaks. The colored curves on the right are Model 3's weekday and weekend profiles fitting almost exactly.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <h2>Residual diagnostics</h2>
+            <p>A good model's residuals should look like random noise around zero. A pattern in the residuals is the model failing to explain something. Here are Model 2's residuals on the left and Model 3's on the right.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="residuals"></div>
+            <figcaption><strong>Fig. 7 &mdash;</strong> Residuals against fitted values. Model 2 shows a mild funnel (the spread widens at higher fitted values, classic heteroscedasticity). Model 3's are tighter and more uniform, confirming the weekday/weekend interaction was earning its place.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <h2>The one hour lag</h2>
+            <p>Model 3 still had autocorrelated residuals. The Durbin-Watson statistic was 0.69, well below the clean value of 2.0. Adding the lag of traffic volume from one hour earlier pushes it to 1.99, which is essentially ideal. The scatter below shows why the lag predictor works so well.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="lag"></div>
+            <figcaption><strong>Fig. 8 &mdash;</strong> Traffic at hour t against traffic at hour t minus 1. The near-perfect diagonal says last hour is the single best predictor of this hour.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <h2>Fitted profiles</h2>
+            <p>What does the final model predict for an average weekday and weekend? If the model captured the structure, these curves should match the raw averages. They do.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="fitted"></div>
+            <figcaption><strong>Fig. 9 &mdash;</strong> Fitted weekday and weekend profiles from Model 3.</figcaption>
+        </figure>
+
+        <section class="prose closing">
+            <h2>Atlanta vs Minneapolis, side by side</h2>
+            <p>The two regressions tell the same story with different coefficients.</p>
+        </section>
+
+        <figure class="full">
+            <div class="chart-container" data-chart="compare"></div>
+            <figcaption><strong>Fig. 10 &mdash;</strong> Adjusted R&sup2; for each model, Minneapolis vs Atlanta. Despite very different cities, sensors, and sample sizes (4,411 vs 840), the relative gains from each modeling choice are almost identical.</figcaption>
+        </figure>
+
+        <section class="prose">
+            <p>The conclusion I drew from the team project holds here too. Time of day and day of week are the dominant predictors of hourly traffic. Weather, which I could not pull for Atlanta without a separate NOAA merge, is likely marginal by comparison. The practical implication is the same: if you want to smooth congestion, shift when people drive, not how they respond to rain.</p>
+        </section>
+
+        <footer>
+            <p>Data: Georgia Department of Transportation TADA portal, station 121-5969, "I-85 N of I-75/85 Split (SB-VOL)." Date range April 19 to May 23, 2025. Hourly southbound volume.</p>
+            <p>This is an independent follow-up to a four-person group project for ISyE 6414. All analysis and visualization on this page is my own work (Quan Duong).</p>
+            <p>Built with D3.js v7, no frameworks.</p>
+        </footer>
+    </article>
+
+    <div id="tooltip"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

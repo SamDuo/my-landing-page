@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shape of a Commute — Zoom Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+</head>
+<body>
+    <div id="stage">
+        <div id="viz-wrap">
+            <svg id="viz"></svg>
+            <div id="annotation"></div>
+            <div id="stats-panel"></div>
+        </div>
+    </div>
+
+    <main>
+        <section class="intro">
+            <p class="eyebrow">A data journey through 4,411 hours</p>
+            <h1>The Shape of a Commute</h1>
+            <p class="lede">Every dot above is one hour of traffic on I-94 near Minneapolis. Keep scrolling. The chart will zoom in, highlight patterns, and tell its own story.</p>
+            <p class="scroll-hint">&darr; scroll</p>
+        </section>
+
+        <section class="step" data-step="0" data-title="4,411 hours">
+            <p><strong>Every dot is one hour.</strong> The x axis is date. The y axis is vehicles per hour. Over six months, this sensor produced a cloud so dense it looks almost solid at rush hour levels.</p>
+        </section>
+
+        <section class="step" data-step="1" data-title="Zoom into one week">
+            <p>Zoom into any single week and a rhythm appears. Two tall spikes every weekday, then softer humps on Saturday and Sunday. This is the weekly pulse.</p>
+        </section>
+
+        <section class="step" data-step="2" data-title="The bimodal day">
+            <p>Fold all 4,411 hours onto a single 24 hour axis. The shape that emerges is the single most important pattern in the data: two peaks, at 7 AM and 5 PM.</p>
+        </section>
+
+        <section class="step" data-step="3" data-title="Highlight the rush">
+            <p>These two bands are the morning and evening rush. Together they account for roughly 60% of the weekly variance. Any model that can't fit both peaks is already losing.</p>
+        </section>
+
+        <section class="step" data-step="4" data-title="Weekday vs weekend">
+            <p>Now split by weekday and weekend. The weekday curve (blue) keeps the sharp spikes. The weekend curve (orange) is a smooth hill centered on noon. Two populations, same sensor.</p>
+        </section>
+
+        <section class="step" data-step="5" data-title="22% to 98%">
+            <p>Fitting these two curves is what takes a regression model from 22% to 98% explanatory power. Watch the scorecard on the right as we walk through each version.</p>
+        </section>
+
+        <section class="step" data-step="6" data-title="Model 1 hour numeric">
+            <p><strong>Model 1</strong> treats hour as a plain number. It can only draw a straight line. A straight line through a two-humped curve misses both humps. Adj R² = 0.22.</p>
+        </section>
+
+        <section class="step" data-step="7" data-title="Model 2 hour factor">
+            <p><strong>Model 2</strong> treats hour as 24 distinct categories. Now it can trace the bimodal shape exactly. Adj R² jumps to 0.85.</p>
+        </section>
+
+        <section class="step" data-step="8" data-title="Model 3 hour by weekend">
+            <p><strong>Model 3</strong> adds an interaction: weekday and weekend get their own 24 hour profiles. This fixes the last large source of error. Adj R² = 0.95.</p>
+        </section>
+
+        <section class="step" data-step="9" data-title="Model 5 with 1-hour lag">
+            <p><strong>Model 5</strong> adds one final predictor: the traffic volume from the previous hour. Autocorrelation in residuals drops from Durbin Watson 0.41 to 1.83. Adj R² = 0.98.</p>
+        </section>
+
+        <section class="step" data-step="10" data-title="What the model predicts">
+            <p>These are the fitted weekday and weekend curves from Model 3. If the model were bad, these would look wrong. They match the raw averages. The model captured the structure.</p>
+        </section>
+
+        <section class="step" data-step="11" data-title="The takeaway">
+            <p>Time of day and day of week predict nearly everything. Weather matters, but only marginally. If you want smoother traffic, the lever isn't weather mitigation. It's shifting <em>when</em> people drive.</p>
+        </section>
+
+        <footer>
+            <p>Data: UCI Machine Learning Repository, Metro Interstate Traffic Volume dataset. Westbound I-94, Minneapolis, March 30 to September 30, 2018.</p>
+            <p>Analysis: ISyE 6414 Regression Analysis. Team: Quan Duong, Hyunkyung Lee, Haoji Wang, Tianchi Lin. Built with D3 v7 and Scrollama.</p>
+        </footer>
+    </main>
+
+    <div id="tooltip"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
