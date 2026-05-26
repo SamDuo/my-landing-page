@@ -1,43 +1,51 @@
 {
   "publications": [
     {
-      "title": "Differentially Private Graph Neural Networks: Shortest-Path Approximation",
+      "title": "Lines on the Map: Causal Effects of City of Atlanta Building Code Amendments on Housing Supply",
+      "authors": "Duong, Q.",
+      "year": 2026,
+      "type": "Master's Thesis",
+      "details": "Within metro difference in differences estimating the effects of four City of Atlanta building code amendments (ADU 2019, Stormwater 2020, Impact Fees 2021, Tree 2022) on rents, prices, and permit composition. Comparing thirty in city ZIPs to twenty three adjacent ZIPs in Fulton, DeKalb, Cobb, and Rockdale. Includes an LLM assisted pipeline for extracting amendment metadata directly from municipal ordinances.",
+      "venue": "Georgia Institute of Technology, School of City and Regional Planning, College of Design. Advisor: Dr. Subhro Guhathakurta."
+    },
+    {
+      "title": "Differentially Private Graph Neural Networks: Shortest Path Approximation",
       "authors": "Duong, Q.",
       "year": 2025,
       "type": "Technical Report",
-      "details": "Implements DP-SGD-trained GNNs on grid, wheel, and scale-free graphs; benchmarks path-length estimation accuracy, fairness gaps, and robustness under varying privacy budgets.",
+      "details": "Implements DP SGD trained GNNs on grid, wheel, and scale free graphs. Benchmarks path length estimation accuracy, fairness gaps, and robustness under varying privacy budgets.",
       "venue": "2025"
     },
     {
-      "title": "Property-Level Analytics Engine for Atlanta Urban Risk Assessment",
+      "title": "Property Level Analytics Engine for Atlanta Urban Risk Assessment",
       "authors": "Duong, Q. et al.",
       "year": 2025,
       "type": "Research Project",
-      "details": "Constructed tract-level database (N=311; 118k+ incidents) integrating crime, ACS, and built-environment features. Detected strong spatial autocorrelation (Moran's I = 0.559) and trained spatial models.",
-      "venue": "Center for Urban Resilience & Analytics, Georgia Tech"
+      "details": "Constructed a tract level database (N=311, more than 118,000 incidents) integrating crime, ACS, and built environment features. Detected strong spatial autocorrelation (Moran's I = 0.559) and trained spatial models.",
+      "venue": "Center for Urban Resilience and Analytics, Georgia Tech"
     },
     {
-      "title": "Social Media Crime Sentiment Modeling: A BERT-Based Approach",
+      "title": "Social Media Crime Sentiment Modeling: A BERT Based Approach",
       "authors": "Duong, Q.",
       "year": 2025,
       "type": "Research Project",
-      "details": "Collected 200k+ Reddit posts on crime; built NLP pipeline with BERT-based sentiment classifiers. Produced visualizations revealing negative sentiment spikes on weekday mornings/evenings.",
+      "details": "Collected more than 200,000 Reddit posts on crime. Built an NLP pipeline with BERT based sentiment classifiers. Produced visualizations revealing negative sentiment spikes on weekday mornings and evenings.",
       "venue": "Ongoing Research"
     },
     {
-      "title": "Agentic RAG System with NVIDIA NIM & LangChain",
+      "title": "Agentic RAG System with NVIDIA NIM and LangChain",
       "authors": "Duong, Q.",
       "year": 2025,
       "type": "Research Project",
-      "details": "Engineered an agentic RAG system with NVIDIA NIM-hosted LLaMA3-70B, document chunking, and FAISS retrieval. Implemented evaluation harnesses and deployed interactive demo.",
+      "details": "Engineered an agentic RAG system with NVIDIA NIM hosted LLaMA3 70B, document chunking, and FAISS retrieval. Implemented evaluation harnesses and deployed an interactive demo.",
       "venue": "Portfolio Project"
     },
     {
-      "title": "Multi-Agent RAG Chatbot for Youth Substance-Abuse Prevention (1st Place)",
+      "title": "Multi Agent RAG Chatbot for Youth Substance Abuse Prevention (1st Place)",
       "authors": "Duong, Q. (Lead)",
       "year": 2025,
       "type": "Competition Winner",
-      "details": "Led development of multi-agent RAG chatbot integrating retrieval, summarization, and planning agents producing clinician-ready insights.",
+      "details": "Led development of a multi agent RAG chatbot integrating retrieval, summarization, and planning agents to produce clinician ready insights.",
       "venue": "TAG Data Challenge 2025"
     }
   ]

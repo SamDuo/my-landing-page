@@ -222,6 +222,27 @@ function ProjectThumb({ kind }) {
   );
 }
 
+// ─── Icon set (Lucide style line icons, 24x24, stroke 1.75) ──────────────────
+const ICON_PATHS = {
+  map: <g><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></g>,
+  building: <g><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></g>,
+  search: <g><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></g>,
+  chart: <g><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></g>,
+  satellite: <g><path d="M13 7 9 3 5 7l4 4"/><path d="m17 11 4 4-4 4-4-4"/><path d="m8 12 4 4 6-6-4-4Z"/><path d="m16 8 3-3"/><path d="M9 21a6 6 0 0 0-6-6"/></g>,
+  bus: <g><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2L20.7 5.2c-.3-1.4-1.6-2.4-3-2.4H6.3c-1.5 0-2.7 1-3 2.4L1.4 12.8c-.1.4-.1.8-.1 1.2s.1.8.2 1.2C1.9 16.3 2 18 2 18h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></g>,
+  pin: <g><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></g>,
+};
+
+function Icon({ name, size = 18, color = "currentColor", strokeWidth = 1.75 }) {
+  const path = ICON_PATHS[name];
+  if (!path) return null;
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle" }}>
+      {path}
+    </svg>
+  );
+}
+
 // ─── Pages ───────────────────────────────────────────────────────────────────
 function AboutPage({ data, variant, onOpenProject }) {
   const v = VARIANTS[variant];
@@ -236,8 +257,8 @@ function AboutPage({ data, variant, onOpenProject }) {
           <p style={{ fontSize: "1.05rem", color: "var(--ink2)", margin: "0 0 1.4rem 0", lineHeight: 1.5 }}>
             {data.affiliation.role} at <a href="#" style={{ color: "var(--accent)" }}>{data.affiliation.lab}</a>, {data.affiliation.org}.
           </p>
-          <div style={{ fontSize: "0.92rem", color: "var(--ink2)", display: "flex", flexWrap: "wrap", gap: "0.2rem 1.2rem", marginBottom: "1.8rem" }}>
-            <span>📍 {data.location}</span>
+          <div style={{ fontSize: "0.92rem", color: "var(--ink2)", display: "flex", flexWrap: "wrap", gap: "0.4rem 1.2rem", marginBottom: "1.8rem", alignItems: "center" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><Icon name="pin" size={15} /> {data.location}</span>
             <a href={`tel:${data.phone}`} style={{ color: "inherit" }}>{data.phone}</a>
             <a href={`mailto:${data.email}`} style={{ color: "inherit" }}>{data.email}</a>
           </div>
@@ -263,8 +284,8 @@ function AboutPage({ data, variant, onOpenProject }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.8rem 2.4rem" }}>
           {data.interests.map((it) => (
             <div key={it.title}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "0.6rem", marginBottom: "0.35rem" }}>
-                <span style={{ fontSize: "1.1rem" }}>{it.icon}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", marginBottom: "0.35rem" }}>
+                <span style={{ color: "var(--accent)", display: "inline-flex" }}><Icon name={it.icon} size={20} /></span>
                 <h3 style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.05rem", margin: 0, color: "var(--ink)" }}>{it.title}</h3>
               </div>
               <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "var(--ink2)" }}>{it.body}</p>
@@ -276,7 +297,7 @@ function AboutPage({ data, variant, onOpenProject }) {
       <section style={{ marginBottom: "3rem" }}>
         <SectionHeader>selected projects</SectionHeader>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {data.projects.slice(0, 3).map((p, i) => (
+          {data.projects.filter(p => p.featured).slice(0, 4).map((p, i) => (
             <button key={p.id} onClick={() => onOpenProject(p.id)}
               style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: "1.2rem", padding: "0.9rem 0", borderTop: i === 0 ? "none" : "1px solid var(--rule)", background: "none", border: "none", borderTopWidth: i===0?0:1, borderTopStyle: "solid", borderTopColor: "var(--rule)", textAlign: "left", cursor: "pointer", color: "inherit", fontFamily: "inherit", alignItems: "baseline" }}>
               <div style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.78rem", color: "var(--ink2)", paddingTop: "0.2rem" }}>0{i + 1} ↗</div>
@@ -293,16 +314,50 @@ function AboutPage({ data, variant, onOpenProject }) {
   );
 }
 
+function ProjectCard({ p, onOpenProject }) {
+  return (
+    <button key={p.id} onClick={() => onOpenProject(p.id)}
+      className="proj-card"
+      style={{ border: "1px solid var(--rule)", borderRadius: 10, overflow: "hidden", background: "var(--surface)", display: "flex", flexDirection: "column", cursor: "pointer", textAlign: "left", padding: 0, color: "inherit", fontFamily: "inherit", transition: "transform 0.15s ease, box-shadow 0.15s ease" }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
+      <div style={{ aspectRatio: "21/10", background: "#eee", position: "relative" }}>
+        {p.heroImage ? (
+          <img src={p.heroImage} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+        ) : (
+          <ProjectThumb kind={p.accent} />
+        )}
+        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: "0.72rem", padding: "0.2rem 0.6rem", borderRadius: 999, fontFamily: FONT_HEAD.mono }}>
+          {p.category}
+        </div>
+      </div>
+      <div style={{ padding: "1rem 1.1rem 1.2rem" }}>
+        <h3 style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.1rem", margin: "0 0 0.3rem 0", color: "var(--ink)" }}>{p.title}</h3>
+        <div style={{ fontSize: "0.82rem", color: "var(--accent)", marginBottom: "0.5rem", fontStyle: "italic" }}>{p.subtitle}</div>
+        <p style={{ margin: "0 0 0.8rem 0", fontSize: "0.88rem", lineHeight: 1.55, color: "var(--ink2)" }}>{p.summary}</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+          {p.tags.slice(0, 4).map((t) => (
+            <span key={t} style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.7rem", padding: "0.15rem 0.5rem", border: "1px solid var(--rule)", borderRadius: 999, color: "var(--ink2)" }}>{t}</span>
+          ))}
+          {p.tags.length > 4 && <span style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.7rem", color: "var(--ink2)" }}>{p.tags.length - 4} more</span>}
+        </div>
+      </div>
+    </button>
+  );
+}
+
 function ProjectsPage({ data, onOpenProject }) {
   const [filter, setFilter] = useState("all");
   const categories = useMemo(() => ["all", ...new Set(data.projects.map(p => p.category))], [data]);
-  const filtered = filter === "all" ? data.projects : data.projects.filter(p => p.category === filter);
+  const visible = filter === "all" ? data.projects : data.projects.filter(p => p.category === filter);
+  const selected = visible.filter(p => p.featured);
+  const more = visible.filter(p => !p.featured);
 
   return (
     <div>
       <h1 style={{ fontFamily: "var(--font-head)", fontWeight: 300, fontSize: "2.6rem", margin: "0 0 0.4rem 0", color: "var(--ink)", letterSpacing: "-0.015em" }}>projects</h1>
       <p style={{ color: "var(--ink2)", fontSize: "1rem", margin: "0 0 1.6rem 0", maxWidth: "62ch" }}>
-        A selection of recent research, coursework, and hackathon projects spanning spatial analytics, GeoAI, and urban policy. Click any card to read more.
+        Research, coursework, and applied work across spatial analytics, urban policy, and GeoAI. Click any card to read more.
       </p>
 
       {/* filter pills */}
@@ -315,33 +370,23 @@ function ProjectsPage({ data, onOpenProject }) {
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
-        {filtered.map((p) => (
-          <button key={p.id} onClick={() => onOpenProject(p.id)}
-            className="proj-card"
-            style={{ border: "1px solid var(--rule)", borderRadius: 10, overflow: "hidden", background: "var(--surface)", display: "flex", flexDirection: "column", cursor: "pointer", textAlign: "left", padding: 0, color: "inherit", fontFamily: "inherit", transition: "transform 0.15s ease, box-shadow 0.15s ease" }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
-            <div style={{ aspectRatio: "21/10", background: "#eee", position: "relative" }}>
-              <ProjectThumb kind={p.accent} />
-              <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: "0.72rem", padding: "0.2rem 0.6rem", borderRadius: 999, fontFamily: FONT_HEAD.mono }}>
-                {p.category}
-              </div>
-            </div>
-            <div style={{ padding: "1rem 1.1rem 1.2rem" }}>
-              <h3 style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.1rem", margin: "0 0 0.3rem 0", color: "var(--ink)" }}>{p.title}</h3>
-              <div style={{ fontSize: "0.82rem", color: "var(--accent)", marginBottom: "0.5rem", fontStyle: "italic" }}>{p.subtitle}</div>
-              <p style={{ margin: "0 0 0.8rem 0", fontSize: "0.88rem", lineHeight: 1.55, color: "var(--ink2)" }}>{p.summary}</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                {p.tags.slice(0, 4).map((t) => (
-                  <span key={t} style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.7rem", padding: "0.15rem 0.5rem", border: "1px solid var(--rule)", borderRadius: 999, color: "var(--ink2)" }}>{t}</span>
-                ))}
-                {p.tags.length > 4 && <span style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.7rem", color: "var(--ink2)" }}>+{p.tags.length - 4}</span>}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+      {selected.length > 0 && (
+        <section style={{ marginBottom: "2.4rem" }}>
+          <h2 style={{ fontFamily: "var(--font-head)", fontWeight: 400, fontSize: "1.5rem", margin: "0 0 1rem 0", color: "var(--ink)", letterSpacing: "-0.01em" }}>Selected Projects</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
+            {selected.map(p => <ProjectCard key={p.id} p={p} onOpenProject={onOpenProject} />)}
+          </div>
+        </section>
+      )}
+
+      {more.length > 0 && (
+        <section>
+          <h2 style={{ fontFamily: "var(--font-head)", fontWeight: 400, fontSize: "1.5rem", margin: "0 0 1rem 0", color: "var(--ink)", letterSpacing: "-0.01em" }}>More Projects</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
+            {more.map(p => <ProjectCard key={p.id} p={p} onOpenProject={onOpenProject} />)}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -385,10 +430,34 @@ function ProjectDetailPage({ data, projectId, onBack }) {
         </div>
       </div>
 
-      {/* hero image */}
-      <div style={{ width: "100%", aspectRatio: "21/9", borderRadius: 10, overflow: "hidden", border: "1px solid var(--rule)", marginBottom: "1.8rem" }}>
-        <ProjectThumb kind={project.accent} />
-      </div>
+      {/* hero: live embed when available, else image, else SVG */}
+      {project.embedUrl ? (
+        <div style={{ marginBottom: "1.8rem" }}>
+          <div style={{ width: "100%", height: project.embedHeight || "80vh", borderRadius: 10, overflow: "hidden", border: "1px solid var(--rule)", background: "#fafafa" }}>
+            <iframe
+              src={project.embedUrl}
+              title={project.title}
+              loading="lazy"
+              style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+              allow="fullscreen"
+            />
+          </div>
+          <div style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "var(--ink2)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+            <span style={{ fontStyle: "italic" }}>Scroll inside the frame to read the story. The map and charts are live.</span>
+            <a href={project.embedUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+              Open full story ↗
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div style={{ width: "100%", aspectRatio: "21/9", borderRadius: 10, overflow: "hidden", border: "1px solid var(--rule)", marginBottom: "1.8rem", background: "#eee" }}>
+          {project.heroImage ? (
+            <img src={project.heroImage} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          ) : (
+            <ProjectThumb kind={project.accent} />
+          )}
+        </div>
+      )}
 
       <p style={{ fontSize: "1.05rem", lineHeight: 1.7, color: "var(--ink)", marginTop: 0, maxWidth: "65ch" }}>
         {project.summary}
@@ -411,6 +480,16 @@ function ProjectDetailPage({ data, projectId, onBack }) {
                 </li>
               ))}
             </ul>
+          )}
+          {s.image && (
+            <figure style={{ margin: "1rem 0 0 0", padding: 0 }}>
+              <div style={{ width: "100%", borderRadius: 8, overflow: "hidden", border: "1px solid var(--rule)", background: "#fafafa" }}>
+                <img src={s.image} alt={s.caption || s.heading} style={{ width: "100%", height: "auto", display: "block" }} />
+              </div>
+              {s.caption && (
+                <figcaption style={{ fontSize: "0.82rem", color: "var(--ink2)", fontStyle: "italic", marginTop: "0.5rem", maxWidth: "65ch" }}>{s.caption}</figcaption>
+              )}
+            </figure>
           )}
         </section>
       ))}
