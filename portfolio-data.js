@@ -122,6 +122,39 @@ window.PORTFOLIO_DATA = {
       ],
     },
     {
+      id: "field_voice_notes",
+      featured: true,
+      status: "in_progress",
+      title: "Field Voice Notes",
+      subtitle: "Hands free keyword spotting for field inspectors on the XIAOML Kit",
+      category: "ML Systems",
+      accent: "nodes",
+      summary:
+        "Tiny keyword spotting model on the XIAOML Kit (ESP32 S3 Sense) so inspectors can log observations hands free while on a ladder, under a bridge, or holding a clipboard. Recognizes a small vocabulary of inspection commands and syncs to the Polymetron scoring backend over WiFi.",
+      tags: ["XIAOML Kit", "ESP32 S3", "TF Lite Micro", "Keyword Spotting", "Edge Audio", "TinyML"],
+      github: null,
+      live: null,
+      sections: [
+        {
+          heading: "Why this build",
+          body: "Field inspectors do not have free hands. They have a clipboard, a flashlight, a phone, and a measuring tape. Voice is the only input modality that does not require a third hand. A small always-on keyword model handles the ten or fifteen commands that cover most logging events.",
+        },
+        {
+          heading: "Reference platform",
+          list: [
+            "Seeed XIAO ESP32 S3 Sense with onboard microphone and 8 MB PSRAM",
+            "TF Lite Micro inference at roughly 30 ms per window",
+            "Initial vocabulary: log crack, mark critical, next asset, photo, undo",
+            "WiFi sync to Polymetron scoring backend, queued offline writes",
+          ],
+        },
+        {
+          heading: "Status",
+          body: "In progress. Audio dataset collection underway. Model training and on-device deployment to follow.",
+        },
+      ],
+    },
+    {
       id: "polyscape",
       title: "PolyScape",
       subtitle: "Multi scale GeoAI visualization for comparative site selection",
@@ -482,38 +515,6 @@ window.PORTFOLIO_DATA = {
         {
           heading: "Status",
           body: "In progress. Hardware acquired, baseline image captured, model port underway. First field test planned alongside the Polymetron production pilot.",
-        },
-      ],
-    },
-    {
-      id: "field_voice_notes",
-      status: "in_progress",
-      title: "Field Voice Notes",
-      subtitle: "Hands free keyword spotting for field inspectors on the XIAOML Kit",
-      category: "ML Systems",
-      accent: "nodes",
-      summary:
-        "Tiny keyword spotting model on the XIAOML Kit (ESP32 S3 Sense) so inspectors can log observations hands free while on a ladder, under a bridge, or holding a clipboard. Recognizes a small vocabulary of inspection commands and syncs to the Polymetron scoring backend over WiFi.",
-      tags: ["XIAOML Kit", "ESP32 S3", "TF Lite Micro", "Keyword Spotting", "Edge Audio", "TinyML"],
-      github: null,
-      live: null,
-      sections: [
-        {
-          heading: "Why this build",
-          body: "Field inspectors do not have free hands. They have a clipboard, a flashlight, a phone, and a measuring tape. Voice is the only input modality that does not require a third hand. A small always-on keyword model handles the ten or fifteen commands that cover most logging events.",
-        },
-        {
-          heading: "Reference platform",
-          list: [
-            "Seeed XIAO ESP32 S3 Sense with onboard microphone and 8 MB PSRAM",
-            "TF Lite Micro inference at roughly 30 ms per window",
-            "Initial vocabulary: log crack, mark critical, next asset, photo, undo",
-            "WiFi sync to Polymetron scoring backend, queued offline writes",
-          ],
-        },
-        {
-          heading: "Status",
-          body: "In progress. Audio dataset collection underway. Model training and on-device deployment to follow.",
         },
       ],
     },
