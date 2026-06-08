@@ -16,7 +16,7 @@ window.PORTFOLIO_DATA = {
     github: "https://github.com/SamDuo",
     scholar: "#",
   },
-  bio: `Graduate researcher at Georgia Tech working at the seam of computer science, analytics, and the built environment. Master's in Spatial Analytics and Computer Science at Georgia Tech, certificate in Applied Machine Learning at Columbia Engineering, and undergraduate in Computer Information Systems. I build reproducible spatial pipelines, edge AI prototypes, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
+  bio: `Graduate researcher at Georgia Tech working at the seam of computer science, analytics, and the built environment. Master's in Spatial Analytics and Computer Science at Georgia Tech, certificate in Applied Machine Learning at Columbia Engineering, and undergraduate in Computer Information Systems. I build reproducible spatial pipelines, mobile and TinyML prototypes, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
   bioExtra: `I split my time between two research roles: Graduate Research Assistant at the Center for Urban Resilience & Analytics (CURA), where I lead within metro difference in differences work and LLM assisted municipal code extraction, and Research Developer & Geospatial Engineer for the Atlanta Food Circular Network (AFCN) at Georgia Tech's I2CE Lab, where I ship production ArcGIS dashboards for the regional food system. Previously Data Analyst Associate at Atlanta BeltLine, Inc.`,
   education: [
     {
@@ -590,8 +590,8 @@ window.PORTFOLIO_DATA = {
     },
     {
       icon: "cpu",
-      title: "On-Device ML and Edge Systems",
-      body: "Building production ML pipelines that run on the device itself. Foundation models for vision and reasoning, deployed where the data lives. Low latency, regulated data, offline by design.",
+      title: "Mobile and TinyML",
+      body: "On-device ML pipelines from phones and SBCs down to ESP32 microcontrollers. Vision language models, keyword spotting, and motion classification, deployed where the data lives. Low latency, regulated data, offline by design.",
     },
     {
       icon: "building",

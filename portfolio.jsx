@@ -390,7 +390,7 @@ function ProjectsPage({ data, onOpenProject }) {
         <section style={{ marginBottom: "2.4rem" }}>
           <h2 style={{ fontFamily: "var(--font-head)", fontWeight: 400, fontSize: "1.5rem", margin: "0 0 0.3rem 0", color: "var(--ink)", letterSpacing: "-0.01em" }}>ML Systems</h2>
           <p style={{ color: "var(--ink2)", fontSize: "0.92rem", margin: "0 0 1rem 0", maxWidth: "62ch" }}>
-            Edge AI builds in progress and on the roadmap. On-device vision, audio, and motion models that extend Polymetron from the browser into the field.
+            Mobile and TinyML builds in progress and on the roadmap. On-device vision, audio, and motion models that extend Polymetron from the browser into the field.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
             {mlSystems.map(p => <ProjectCard key={p.id} p={p} onOpenProject={onOpenProject} />)}
