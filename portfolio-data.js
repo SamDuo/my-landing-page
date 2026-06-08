@@ -16,7 +16,7 @@ window.PORTFOLIO_DATA = {
     github: "https://github.com/SamDuo",
     scholar: "#",
   },
-  bio: `Graduate researcher at Georgia Tech working at the seam of computer science, analytics, and the built environment. Master's in Urban Analytics at the School of City and Regional Planning, Columbia Engineering certificate in Applied Machine Learning, and undergraduate in Computer Information Systems at Georgia State. I build reproducible spatial pipelines, edge AI prototypes, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
+  bio: `Graduate researcher at Georgia Tech working at the seam of computer science, analytics, and the built environment. Master's in Spatial Analytics and Computer Science at Georgia Tech, certificate in Applied Machine Learning at Columbia Engineering, and undergraduate in Computer Information Systems. I build reproducible spatial pipelines, edge AI prototypes, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
   bioExtra: `I split my time between two research roles: Graduate Research Assistant at the Center for Urban Resilience & Analytics (CURA), where I lead within metro difference in differences work and LLM assisted municipal code extraction, and Research Developer & Geospatial Engineer for the Atlanta Food Circular Network (AFCN) at Georgia Tech's I2CE Lab, where I ship production ArcGIS dashboards for the regional food system. Previously Data Analyst Associate at Atlanta BeltLine, Inc.`,
   education: [
     {
