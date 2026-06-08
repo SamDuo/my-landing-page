@@ -5,7 +5,7 @@ window.PORTFOLIO_DATA = {
   tagline: "Spatial Data Scientist · Urban Analytics · Causal Inference",
   affiliation: {
     role: "Graduate Research Assistant · Research Developer",
-    lab: "CURA · I2CE Lab (Atlanta Food Circular Network)",
+    lab: "CURA · I2CE Lab",
     org: "Georgia Institute of Technology",
   },
   location: "Atlanta, GA",
@@ -16,7 +16,7 @@ window.PORTFOLIO_DATA = {
     github: "https://github.com/SamDuo",
     scholar: "#",
   },
-  bio: `Master's student in Urban Analytics at Georgia Tech's School of City and Regional Planning, defending my thesis on the causal effects of municipal building code amendments on housing supply. I build reproducible spatial pipelines, interactive dashboards, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
+  bio: `Graduate researcher at Georgia Tech working at the seam of computer science, analytics, and the built environment. Master's in Urban Analytics at the School of City and Regional Planning, Columbia Engineering certificate in Applied Machine Learning, and undergraduate in Computer Information Systems at Georgia State. I build reproducible spatial pipelines, edge AI prototypes, and causal evidence at the sub metro scale, with most of my recent work focused on the eleven county Atlanta region.`,
   bioExtra: `I split my time between two research roles: Graduate Research Assistant at the Center for Urban Resilience & Analytics (CURA), where I lead within metro difference in differences work and LLM assisted municipal code extraction, and Research Developer & Geospatial Engineer for the Atlanta Food Circular Network (AFCN) at Georgia Tech's I2CE Lab, where I ship production ArcGIS dashboards for the regional food system. Previously Data Analyst Associate at Atlanta BeltLine, Inc.`,
   education: [
     {
@@ -78,6 +78,49 @@ window.PORTFOLIO_DATA = {
     },
   ],
   projects: [
+    {
+      id: "polymetron",
+      featured: true,
+      status: "in_progress",
+      title: "Polymetron",
+      subtitle: "Edge AI for the built environment, starting with risk analytics",
+      category: "Edge AI",
+      accent: "nodes",
+      summary:
+        "On-device AI that inspects buildings and infrastructure at the asset level. Insurers, cities, and real estate teams point a phone at a building and get a risk score with the evidence behind it, no cloud upload. Built on top of a live digital twin of metro Atlanta that ingests building footprints, street networks, parcel data, and movement.",
+      tags: ["Edge AI", "On-device ML", "WebGPU", "Digital Twin", "Risk Analytics", "Spatial ML", "Mapbox GL", "ArcGIS Maps SDK"],
+      github: "https://github.com/SamDuo/polymetron",
+      live: "https://polymetron-ar.samduong-work.workers.dev",
+      sections: [
+        {
+          heading: "What it does",
+          list: [
+            "Point a phone at a building, the model runs on the device and describes what it sees out loud",
+            "Returns a risk score with the evidence behind every number, asset by asset, not at zip code resolution",
+            "Works offline, in basements, on bridges, and on sites without internet access",
+            "Same scoring pattern already running at Georgia Tech dining halls for food waste detection and surplus routing",
+          ],
+        },
+        {
+          heading: "Why edge AI",
+          body: "Cloud AI breaks the customer. Insurance and government data are regulated and cannot be uploaded. Fieldwork happens in basements and on bridges where there is no signal. And every score has to be reproducible six months from now in front of a court or a council. Cloud models drift. The model on your phone does not.",
+        },
+        {
+          heading: "The underlying digital twin",
+          body: "Started as a research project at Georgia Tech's I2CE Lab and grew into a live simulation of metro Atlanta. The engine ingests building footprints, street networks, parcel data, foot traffic, vehicle movement, and environmental layers, then runs them together as one model of the place. Pull a slider and the morning commute redistributes when a bridge is closed. Drop a new mid rise on a parcel and watch the shadow it casts onto the school next door at 3 PM in February. The same engine powers the per asset risk scoring users see when they point a camera.",
+        },
+        {
+          heading: "Stack",
+          list: [
+            "On-device inference: WebGPU and ONNX Runtime Web, browser and phone first",
+            "Vision: small vision language model fine tuned on building damage classes",
+            "Spatial data: Mapbox GL JS, ArcGIS Maps SDK, GeoPandas pipelines",
+            "Digital twin: Python simulation engine with H3 indexing and Census, OSM, and Overture Maps fabric",
+            "Deployment: Cloudflare Workers edge with no cloud inference dependency",
+          ],
+        },
+      ],
+    },
     {
       id: "polyscape",
       title: "PolyScape",
@@ -410,12 +453,145 @@ window.PORTFOLIO_DATA = {
         },
       ],
     },
+    {
+      id: "polymetron_edge_box",
+      status: "in_progress",
+      title: "Polymetron Edge Box",
+      subtitle: "Raspberry Pi 5 port of the Polymetron vision model for field inspection",
+      category: "ML Systems",
+      accent: "nodes",
+      summary:
+        "Port the Polymetron browser model onto a Raspberry Pi 5 with a Pi Camera module. Mounts on a tripod or hard hat for industrial inspection. Same on-device vision, same scoring backend, no browser dependency. The ruggedized version of the field tool that the Polymetron application talks about.",
+      tags: ["Raspberry Pi 5", "PyTorch", "VLM", "Edge AI", "On-device Inference", "Pi Camera"],
+      github: null,
+      live: null,
+      sections: [
+        {
+          heading: "Why this build",
+          body: "The browser demo proves the model works on consumer hardware. The Pi 5 port proves it survives the field. Targets a small ruggedized form factor that an inspector can hand to a colleague, mount on a hard hat, or drop on a tripod next to an asset.",
+        },
+        {
+          heading: "Reference platform",
+          list: [
+            "Raspberry Pi 5 with Pi Camera Module 3 wide",
+            "Local model: small vision language model in ONNX, quantized to int8",
+            "Python service with FastAPI, streaming inference",
+            "Optional Coral USB accelerator for higher framerate",
+          ],
+        },
+        {
+          heading: "Status",
+          body: "In progress. Hardware acquired, baseline image captured, model port underway. First field test planned alongside the Polymetron production pilot.",
+        },
+      ],
+    },
+    {
+      id: "field_voice_notes",
+      status: "in_progress",
+      title: "Field Voice Notes",
+      subtitle: "Hands free keyword spotting for field inspectors on the XIAOML Kit",
+      category: "ML Systems",
+      accent: "nodes",
+      summary:
+        "Tiny keyword spotting model on the XIAOML Kit (ESP32 S3 Sense) so inspectors can log observations hands free while on a ladder, under a bridge, or holding a clipboard. Recognizes a small vocabulary of inspection commands and syncs to the Polymetron scoring backend over WiFi.",
+      tags: ["XIAOML Kit", "ESP32 S3", "TF Lite Micro", "Keyword Spotting", "Edge Audio", "TinyML"],
+      github: null,
+      live: null,
+      sections: [
+        {
+          heading: "Why this build",
+          body: "Field inspectors do not have free hands. They have a clipboard, a flashlight, a phone, and a measuring tape. Voice is the only input modality that does not require a third hand. A small always-on keyword model handles the ten or fifteen commands that cover most logging events.",
+        },
+        {
+          heading: "Reference platform",
+          list: [
+            "Seeed XIAO ESP32 S3 Sense with onboard microphone and 8 MB PSRAM",
+            "TF Lite Micro inference at roughly 30 ms per window",
+            "Initial vocabulary: log crack, mark critical, next asset, photo, undo",
+            "WiFi sync to Polymetron scoring backend, queued offline writes",
+          ],
+        },
+        {
+          heading: "Status",
+          body: "In progress. Audio dataset collection underway. Model training and on-device deployment to follow.",
+        },
+      ],
+    },
+    {
+      id: "structural_vibration_monitor",
+      status: "planned",
+      title: "Structural Vibration Monitor",
+      subtitle: "Ultra low power IMU motion classification for bridges and aging facades",
+      category: "ML Systems",
+      accent: "nodes",
+      summary:
+        "Always-on vibration monitor for structural health on the Arduino Nicla Vision board. Battery life measured in months. Trains a small motion classifier on the onboard IMU to flag anomalous vibration patterns. Direct extension of the structural fatigue thesis behind Polymetron.",
+      tags: ["Arduino Nicla Vision", "STM32H7", "IMU", "Motion Classification", "Ultra Low Power", "Structural Health"],
+      github: null,
+      live: null,
+      sections: [
+        {
+          heading: "Why this build",
+          body: "Polymetron sees risk from the outside. A vibration monitor catches the risks the camera cannot see, like subtle resonance shifts under a bridge deck or hairline propagation in a concrete column. The two together give an asset both a visual signature and a structural signature.",
+        },
+        {
+          heading: "Reference platform",
+          list: [
+            "Arduino Nicla Vision with onboard 6-axis IMU",
+            "Always-on classifier in TF Lite Micro, sub mW idle power",
+            "Anomaly detection trained on baseline normal vibration windows",
+            "Edge to gateway sync over BLE when an anomaly threshold trips",
+          ],
+        },
+        {
+          heading: "Status",
+          body: "Planned. Hardware identified, training dataset strategy outlined. Build window after the Polymetron pilot lands.",
+        },
+      ],
+    },
+    {
+      id: "facade_inspector_npu",
+      status: "planned",
+      title: "Facade Inspector",
+      subtitle: "NPU accelerated object detection on the Grove Vision AI V2",
+      category: "ML Systems",
+      accent: "nodes",
+      summary:
+        "Object detection running on the Grove Vision AI V2's Ethos-U55 NPU. Recognizes facade damage classes (cracks, water staining, missing fasteners) at video frame rate. Designed for mounting on a drone or pole. The cheapest hardware path to NPU accelerated risk analytics.",
+      tags: ["Grove Vision AI V2", "Ethos-U55 NPU", "Object Detection", "Industrial AI", "Drone Payload", "Hardware Acceleration"],
+      github: null,
+      live: null,
+      sections: [
+        {
+          heading: "Why this build",
+          body: "A phone is the right form factor for an inspector. A drone is the right form factor for a building owner who wants to inspect forty facades in an afternoon. The Grove Vision AI V2 fits the drone constraint at roughly $25 a board, with a real NPU doing the work instead of the host CPU.",
+        },
+        {
+          heading: "Reference platform",
+          list: [
+            "Seeed Grove Vision AI V2 with ARM Cortex-M55 and Ethos-U55 NPU",
+            "Custom small object detector trained on facade damage classes",
+            "SenseCraft AI pipeline for on-device model deployment",
+            "Optional CSI camera with telephoto lens for high altitude capture",
+          ],
+        },
+        {
+          heading: "Status",
+          body: "Planned. Build sequenced after the Pi 5 port lands a first pilot.",
+        },
+      ],
+    },
   ],
   interests: [
     {
       icon: "map",
       title: "Spatial Analytics",
       body: "Integrating Census, GTFS, POI, and remote sensing data to study urban systems, accessibility, and neighborhood change at scale.",
+    },
+    {
+      icon: "cpu",
+      title: "On-Device ML and Edge Systems",
+      body: "Building production ML pipelines that run on the device itself. Foundation models for vision and reasoning, deployed where the data lives. Low latency, regulated data, offline by design.",
     },
     {
       icon: "building",

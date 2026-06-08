@@ -231,6 +231,7 @@ const ICON_PATHS = {
   satellite: <g><path d="M13 7 9 3 5 7l4 4"/><path d="m17 11 4 4-4 4-4-4"/><path d="m8 12 4 4 6-6-4-4Z"/><path d="m16 8 3-3"/><path d="M9 21a6 6 0 0 0-6-6"/></g>,
   bus: <g><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2L20.7 5.2c-.3-1.4-1.6-2.4-3-2.4H6.3c-1.5 0-2.7 1-3 2.4L1.4 12.8c-.1.4-.1.8-.1 1.2s.1.8.2 1.2C1.9 16.3 2 18 2 18h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></g>,
   pin: <g><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></g>,
+  cpu: <g><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></g>,
 };
 
 function Icon({ name, size = 18, color = "currentColor", strokeWidth = 1.75 }) {
@@ -330,6 +331,11 @@ function ProjectCard({ p, onOpenProject }) {
         <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: "0.72rem", padding: "0.2rem 0.6rem", borderRadius: 999, fontFamily: FONT_HEAD.mono }}>
           {p.category}
         </div>
+        {p.status && p.status !== "completed" && (
+          <div style={{ position: "absolute", top: 8, right: 8, background: p.status === "in_progress" ? "rgba(194,65,12,0.92)" : "rgba(115,106,97,0.92)", color: "#fff", fontSize: "0.68rem", padding: "0.18rem 0.55rem", borderRadius: 999, fontFamily: FONT_HEAD.mono, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            {p.status === "in_progress" ? "In Progress" : "Planned"}
+          </div>
+        )}
       </div>
       <div style={{ padding: "1rem 1.1rem 1.2rem" }}>
         <h3 style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.1rem", margin: "0 0 0.3rem 0", color: "var(--ink)" }}>{p.title}</h3>
@@ -350,8 +356,9 @@ function ProjectsPage({ data, onOpenProject }) {
   const [filter, setFilter] = useState("all");
   const categories = useMemo(() => ["all", ...new Set(data.projects.map(p => p.category))], [data]);
   const visible = filter === "all" ? data.projects : data.projects.filter(p => p.category === filter);
-  const selected = visible.filter(p => p.featured);
-  const more = visible.filter(p => !p.featured);
+  const selected = visible.filter(p => p.featured && p.category !== "ML Systems");
+  const mlSystems = visible.filter(p => p.category === "ML Systems");
+  const more = visible.filter(p => !p.featured && p.category !== "ML Systems");
 
   return (
     <div>
@@ -375,6 +382,18 @@ function ProjectsPage({ data, onOpenProject }) {
           <h2 style={{ fontFamily: "var(--font-head)", fontWeight: 400, fontSize: "1.5rem", margin: "0 0 1rem 0", color: "var(--ink)", letterSpacing: "-0.01em" }}>Selected Projects</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
             {selected.map(p => <ProjectCard key={p.id} p={p} onOpenProject={onOpenProject} />)}
+          </div>
+        </section>
+      )}
+
+      {mlSystems.length > 0 && (
+        <section style={{ marginBottom: "2.4rem" }}>
+          <h2 style={{ fontFamily: "var(--font-head)", fontWeight: 400, fontSize: "1.5rem", margin: "0 0 0.3rem 0", color: "var(--ink)", letterSpacing: "-0.01em" }}>ML Systems</h2>
+          <p style={{ color: "var(--ink2)", fontSize: "0.92rem", margin: "0 0 1rem 0", maxWidth: "62ch" }}>
+            Edge AI builds in progress and on the roadmap. On-device vision, audio, and motion models that extend Polymetron from the browser into the field.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.6rem" }}>
+            {mlSystems.map(p => <ProjectCard key={p.id} p={p} onOpenProject={onOpenProject} />)}
           </div>
         </section>
       )}
