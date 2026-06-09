@@ -81,7 +81,7 @@ window.PORTFOLIO_DATA = {
     {
       id: "polymetron",
       featured: true,
-      status: "in_progress",
+      status: "planned",
       title: "Polymetron",
       subtitle: "Edge AI for the built environment, starting with risk analytics",
       category: "Edge AI",
@@ -124,7 +124,7 @@ window.PORTFOLIO_DATA = {
     {
       id: "field_voice_notes",
       featured: true,
-      status: "in_progress",
+      status: "planned",
       title: "Field Voice Notes",
       subtitle: "Hands free keyword spotting for field inspectors on the XIAOML Kit",
       category: "ML Systems",
@@ -520,7 +520,8 @@ window.PORTFOLIO_DATA = {
     },
     {
       id: "asset_motion_tracker",
-      status: "planned",
+      status: "in_progress",
+      heroImage: "https://mlsysbook.ai/kits/contents/seeed/xiao_esp32s3/motion_classification/images/png/boat.png",
       title: "Asset Motion Tracker",
       subtitle: "On-device motion classification and anomaly detection on the XIAOML Kit",
       category: "ML Systems",
@@ -544,16 +545,18 @@ window.PORTFOLIO_DATA = {
             "Battery operation with the kit's onboard OLED for standalone status display",
             "Builds on Marcelo Rovai's XIAO ESP32S3 motion classification lab in the Harvard MLSysBook",
           ],
+          image: "https://mlsysbook.ai/kits/contents/seeed/xiao_esp32s3/motion_classification/images/jpeg/anomaly.jpg",
+          caption: "Edge Impulse Anomaly Explorer. Orange test samples (maritime motion) overlapping known training clusters return low anomaly scores; outliers stand alone. Placeholder image courtesy of Marcelo Rovai, MLSysBook.",
         },
         {
           heading: "Status",
-          body: "Planned. Build window after Field Voice Notes ships its first field test, since both use the same hardware family and the same Edge Impulse toolchain.",
+          body: "In progress. Toolchain proven on the XIAOML Kit, training set being collected. First field deployment alongside the Polymetron pilot.",
         },
       ],
     },
     {
       id: "onsite_object_counter",
-      status: "planned",
+      status: "in_progress",
       title: "On-Site Object Counter",
       subtitle: "Open-vocabulary VLM detection plus FOMO counting on the XIAOML Kit family",
       category: "ML Systems",
@@ -588,7 +591,7 @@ window.PORTFOLIO_DATA = {
         },
         {
           heading: "Status",
-          body: "Planned. Sequenced after Field Voice Notes ships and after the motion classifier proves the toolchain.",
+          body: "In progress. FOMO mode prototyped on the XIAOML Kit; VLM mode under integration on the Pi 5 Edge Box for open-vocabulary queries.",
         },
       ],
     },
