@@ -521,7 +521,7 @@ window.PORTFOLIO_DATA = {
     {
       id: "asset_motion_tracker",
       status: "in_progress",
-      heroImage: "https://mlsysbook.ai/kits/contents/seeed/xiao_esp32s3/motion_classification/images/png/boat.png",
+      heroImage: "uploads/projects/motion-boat.png",
       title: "Asset Motion Tracker",
       subtitle: "On-device motion classification and anomaly detection on the XIAOML Kit",
       category: "ML Systems",
@@ -545,7 +545,7 @@ window.PORTFOLIO_DATA = {
             "Battery operation with the kit's onboard OLED for standalone status display",
             "Builds on Marcelo Rovai's XIAO ESP32S3 motion classification lab in the Harvard MLSysBook",
           ],
-          image: "https://mlsysbook.ai/kits/contents/seeed/xiao_esp32s3/motion_classification/images/jpeg/anomaly.jpg",
+          image: "uploads/projects/motion-anomaly.jpg",
           caption: "Edge Impulse Anomaly Explorer. Orange test samples (maritime motion) overlapping known training clusters return low anomaly scores; outliers stand alone. Placeholder image courtesy of Marcelo Rovai, MLSysBook.",
         },
         {
@@ -557,6 +557,7 @@ window.PORTFOLIO_DATA = {
     {
       id: "onsite_object_counter",
       status: "in_progress",
+      heroImage: "uploads/projects/object-counter-fomo.jpg",
       title: "On-Site Object Counter",
       subtitle: "Open-vocabulary VLM detection plus FOMO counting on the XIAOML Kit family",
       category: "ML Systems",
