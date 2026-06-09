@@ -555,27 +555,35 @@ window.PORTFOLIO_DATA = {
       id: "onsite_object_counter",
       status: "planned",
       title: "On-Site Object Counter",
-      subtitle: "FOMO object detection on the XIAOML Kit for jobsite and asset inventory",
+      subtitle: "Open-vocabulary VLM detection plus FOMO counting on the XIAOML Kit family",
       category: "ML Systems",
       accent: "nodes",
       summary:
-        "Tiny object detection model running on the XIAOML Kit's OV3660 camera using FOMO (Faster Objects, More Objects), a centroid-based architecture that fits in roughly 250KB of RAM. Counts assets on-site at video rate without uploading any imagery. Use cases include jobsite inventory, equipment audits, occupancy counts, and parking-lot inventories where customer data cannot leave the premises.",
-      tags: ["XIAOML Kit", "ESP32 S3", "FOMO", "Object Detection", "OV3660 Camera", "Edge Impulse", "SenseCraft AI"],
+        "Two complementary detection modes on the same hardware family. A small vision language model handles open-vocabulary queries: point and ask 'find the wine bottle' or 'count the cracks' in natural language, no per-class training required. FOMO handles known-class counting at video rate on the XIAOML Kit itself, roughly 250KB RAM and around 7 FPS. The customer picks the right mode for the question, and no imagery leaves the site.",
+      tags: ["XIAOML Kit", "ESP32 S3", "VLM", "Open-Vocabulary Detection", "FOMO", "Moondream", "Edge Impulse", "ONNX Runtime"],
       github: null,
       live: null,
       sections: [
         {
-          heading: "Why this build",
-          body: "Counting is the unglamorous half of inspection. How many cars are in this lot, how many pallets are in this warehouse, how many panels are on this roof. The customer wants the number, not the imagery, and the imagery often cannot leave the site for regulatory reasons. FOMO turns the XIAOML Kit into a roughly $40 standalone counting sensor that returns a number over WiFi and discards every frame.",
+          heading: "Two modes, one platform",
+          list: [
+            "Open-vocabulary mode: a small VLM on the paired phone or Pi 5 Edge Box accepts natural language queries. The user asks 'find any cracks' and gets back boxes and counts, no per-class training needed.",
+            "Closed-class mode: FOMO on the XIAOML Kit itself counts pre-trained classes at video rate, roughly 250KB RAM and around 7 FPS on the ESP32S3.",
+            "Both modes return per-object centroids, bounding boxes, and confidence scores. Both keep imagery on-device.",
+          ],
+        },
+        {
+          heading: "Why dual-mode",
+          body: "Counting is rarely a single-class problem in the field. An inspector wants to count parking spots one minute, count visible cracks the next, count missing fasteners after that. FOMO is fast and cheap when the class is known and stable. A small VLM is slower but answers anything the inspector can describe in words. Having both modes on the same platform means the customer can answer planned questions cheaply and ad-hoc questions on demand, without retraining a model per question.",
         },
         {
           heading: "Reference platform",
           list: [
-            "XIAOML Kit OV3660 camera with a 96x96 grayscale input window",
-            "FOMO MobileNetV2 0.35 model, roughly 250KB RAM and 80KB Flash",
-            "Edge Impulse pipeline with auto-labeling and an 80/20 train-test split",
-            "Deployment via SenseCraft AI Studio for fast iteration or Arduino IDE for production",
-            "Builds on Marcelo Rovai's XIAO ESP32S3 object detection lab in the Harvard MLSysBook",
+            "XIAOML Kit OV3660 camera with a 96x96 grayscale input window for the FOMO path",
+            "FOMO MobileNetV2 0.35 model, roughly 250KB RAM and 80KB Flash, around 7 FPS on the ESP32S3",
+            "Small VLM (Moondream or a distilled Florence-2) on the paired phone or Pi 5 Edge Box for open-vocabulary queries",
+            "Edge Impulse pipeline for FOMO training; ONNX Runtime or PyTorch Mobile for the VLM deployment",
+            "Builds on Marcelo Rovai's XIAO ESP32S3 object detection lab in the Harvard MLSysBook, extended with the VLM grounding pattern",
           ],
         },
         {
