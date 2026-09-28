@@ -335,6 +335,66 @@ function Hero({ dark }) {
   );
 }
 
+/*
+ * A compact "by the numbers" band. Every figure here is one already claimed
+ * elsewhere on this page or in the CV; the band restates them, it does not
+ * introduce new ones. data-count is what motion.js animates.
+ */
+const STATS = [
+  { n: 12550, suffix: "", label: "building code passages indexed" },
+  { n: 12933, suffix: "", label: "parcels published publicly" },
+  { n: 30, suffix: "", label: "spatial layers in production" },
+  { n: 3, suffix: "", label: "papers accepted or under review" },
+];
+
+function StatsBand() {
+  return (
+    <section className="sd-stats" style={{ marginBottom: "3rem" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "1.4rem",
+          padding: "1.5rem 0",
+          borderTop: "1px solid var(--rule)",
+          borderBottom: "1px solid var(--rule)",
+        }}
+      >
+        {STATS.map((s) => (
+          <div key={s.label}>
+            <div
+              data-count={s.n}
+              data-suffix={s.suffix}
+              style={{
+                fontFamily: "var(--font-head)",
+                fontWeight: 400,
+                fontSize: "clamp(1.5rem, 3vw, 2.1rem)",
+                lineHeight: 1,
+                color: "var(--accent)",
+                letterSpacing: "-0.02em",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {s.n.toLocaleString()}{s.suffix}
+            </div>
+            <div
+              style={{
+                fontFamily: FONT_HEAD.mono,
+                fontSize: "0.72rem",
+                lineHeight: 1.4,
+                color: "var(--ink2)",
+                marginTop: "0.5rem",
+              }}
+            >
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function AboutPage({ data, variant, onOpenProject, dark }) {
   const v = VARIANTS[variant];
   const stacked = v.heroLayout === "stacked";
@@ -370,6 +430,8 @@ function AboutPage({ data, variant, onOpenProject, dark }) {
           </div>
         </aside>
       </header>
+
+      <StatsBand />
 
       <section style={{ marginBottom: "3rem" }}>
         <SectionHeader>research interests</SectionHeader>

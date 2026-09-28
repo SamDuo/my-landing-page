@@ -32,56 +32,15 @@
       a:hover { text-decoration: underline; }
 
       /* ── Motion ──────────────────────────────────────────────────────────
-         A scroll-driven reveal for long sections, and an entrance for the
-         page container on route change. Both are opt-in through the classes
-         motion.js adds, so with JS off, or under prefers-reduced-motion,
-         everything renders at full opacity and nothing moves. */
-      @media (prefers-reduced-motion: no-preference) {
-        [data-reveal] {
-          opacity: 0;
-          transform: translateY(14px);
-          transition: opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
-                      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
-          will-change: opacity, transform;
-        }
-        [data-reveal].is-revealed {
-          opacity: 1;
-          transform: none;
-        }
-        /* Stagger siblings so a run of cards cascades instead of snapping. */
-        [data-reveal].d1 { transition-delay: 60ms; }
-        [data-reveal].d2 { transition-delay: 120ms; }
-        [data-reveal].d3 { transition-delay: 180ms; }
-        [data-reveal].d4 { transition-delay: 240ms; }
-
-        @keyframes sd-page-in {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: none; }
-        }
-        .sd-page-in { animation: sd-page-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-        /* Hero: the plate settles, then the two lines of type arrive. */
-        @keyframes sd-hero-plate {
-          from { opacity: 0; transform: scale(1.06); }
-          to   { opacity: 1; transform: scale(1); }
-        }
-        @keyframes sd-hero-type {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: none; }
-        }
-        .sd-hero-img {
-          animation: sd-hero-plate 1400ms cubic-bezier(0.22, 1, 0.36, 1) both;
-        }
-        .sd-hero-eyebrow {
-          animation: sd-hero-type 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both;
-        }
-        .sd-hero-line {
-          animation: sd-hero-type 820ms cubic-bezier(0.22, 1, 0.36, 1) 340ms both;
-        }
-      }
+         All entrances are driven by GSAP in motion.js using gsap.from(),
+         which animates from a synthetic start state to the element's natural
+         state. Nothing here hides content: if the scripts fail to load, or
+         the visitor prefers reduced motion, the page renders complete and
+         static. That is deliberate — there is no "stuck invisible" state. */
 
       /* The hero band is decoration: keep it out of the way of long text. */
       .sd-hero { contain: paint; }
+      .sd-hero-img { will-change: transform; }
 
       /* The about header is a two-column flex row at every width, so on a
          phone the portrait overlapped the name and squeezed the intro into a
@@ -110,6 +69,9 @@
           grid-template-columns: 1fr !important;
           gap: 0.5rem !important;
         }
+
+        /* Four stats across is unreadable on a phone. */
+        .sd-stats > div { grid-template-columns: repeat(2, 1fr) !important; }
       }
 
       /* Project cards: the image settles back as the card lifts. */
@@ -126,6 +88,12 @@
          dependency at runtime and keeps working if unpkg is unreachable. -->
     <script src="vendor/react.production.min.js"></script>
     <script src="vendor/react-dom.production.min.js"></script>
+
+    <!-- GSAP 3.13 + ScrollTrigger drive every entrance and the scroll
+         choreography, vendored for the same reason as React. Both are
+         optional: motion.js bails out cleanly if either is missing. -->
+    <script src="vendor/gsap.min.js"></script>
+    <script src="vendor/ScrollTrigger.min.js"></script>
 
     <script src="portfolio-data.js?v=2026-09-28"></script>
     <!-- Precompiled from portfolio.jsx. Regenerate with: npm run build -->

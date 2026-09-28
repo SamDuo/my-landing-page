@@ -568,6 +568,68 @@ function Hero({
     }
   }, "GeoAI that shows its sources", /*#__PURE__*/React.createElement("br", null), "and checks its own citations.")));
 }
+
+/*
+ * A compact "by the numbers" band. Every figure here is one already claimed
+ * elsewhere on this page or in the CV; the band restates them, it does not
+ * introduce new ones. data-count is what motion.js animates.
+ */
+const STATS = [{
+  n: 12550,
+  suffix: "",
+  label: "building code passages indexed"
+}, {
+  n: 12933,
+  suffix: "",
+  label: "parcels published publicly"
+}, {
+  n: 30,
+  suffix: "",
+  label: "spatial layers in production"
+}, {
+  n: 3,
+  suffix: "",
+  label: "papers accepted or under review"
+}];
+function StatsBand() {
+  return /*#__PURE__*/React.createElement("section", {
+    className: "sd-stats",
+    style: {
+      marginBottom: "3rem"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: "1.4rem",
+      padding: "1.5rem 0",
+      borderTop: "1px solid var(--rule)",
+      borderBottom: "1px solid var(--rule)"
+    }
+  }, STATS.map(s => /*#__PURE__*/React.createElement("div", {
+    key: s.label
+  }, /*#__PURE__*/React.createElement("div", {
+    "data-count": s.n,
+    "data-suffix": s.suffix,
+    style: {
+      fontFamily: "var(--font-head)",
+      fontWeight: 400,
+      fontSize: "clamp(1.5rem, 3vw, 2.1rem)",
+      lineHeight: 1,
+      color: "var(--accent)",
+      letterSpacing: "-0.02em",
+      fontVariantNumeric: "tabular-nums"
+    }
+  }, s.n.toLocaleString(), s.suffix), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_HEAD.mono,
+      fontSize: "0.72rem",
+      lineHeight: 1.4,
+      color: "var(--ink2)",
+      marginTop: "0.5rem"
+    }
+  }, s.label)))));
+}
 function AboutPage({
   data,
   variant,
@@ -701,7 +763,7 @@ function AboutPage({
       fontFamily: FONT_HEAD.mono,
       maxWidth: variant === "bold" ? 300 : 240
     }
-  }, "CURA Lab \xB7 Tech Square", /*#__PURE__*/React.createElement("br", null), "Georgia Tech", /*#__PURE__*/React.createElement("br", null), "Atlanta, GA 30332"))), /*#__PURE__*/React.createElement("section", {
+  }, "CURA Lab \xB7 Tech Square", /*#__PURE__*/React.createElement("br", null), "Georgia Tech", /*#__PURE__*/React.createElement("br", null), "Atlanta, GA 30332"))), /*#__PURE__*/React.createElement(StatsBand, null), /*#__PURE__*/React.createElement("section", {
     style: {
       marginBottom: "3rem"
     }
