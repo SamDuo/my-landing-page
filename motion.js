@@ -27,8 +27,15 @@
     for (var i = 0; i < hidden.length; i++) hidden[i].classList.add("is-revealed");
   }
 
-  // Failsafe: whatever happens below, nothing stays hidden past 2 seconds.
-  setTimeout(revealAll, 2000);
+  // Failsafe, deliberately conditional. A blanket timeout would reveal
+  // everything including below-the-fold rows, which defeats the whole effect.
+  // Instead: if nothing at all has been revealed by 2.5s, the observer is not
+  // working, so fall back to showing everything. If it has revealed even one
+  // element it is healthy, and the rest reveal on scroll as intended.
+  var revealedAny = false;
+  setTimeout(function () {
+    if (!revealedAny) revealAll();
+  }, 2500);
 
   var observer;
   try {
@@ -37,6 +44,7 @@
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isIntersecting) {
             entries[i].target.classList.add("is-revealed");
+            revealedAny = true;
             observer.unobserve(entries[i].target);
           }
         }

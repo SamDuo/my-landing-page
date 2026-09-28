@@ -494,14 +494,92 @@ function Icon({
 }
 
 // ─── Pages ───────────────────────────────────────────────────────────────────
+/*
+ * Hero: a full-bleed band above the CV header. The artwork is an abstract
+ * cartographic texture, deliberately not a depiction of any real place or of
+ * any model output, since the page's argument is that claims should be
+ * checkable. It is decoration and is marked aria-hidden.
+ */
+function Hero({
+  dark
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "sd-hero",
+    style: {
+      position: "relative",
+      width: "100vw",
+      marginLeft: "calc(50% - 50vw)",
+      marginTop: "-2.2rem",
+      marginBottom: "2.8rem",
+      minHeight: "clamp(300px, 44vh, 460px)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      background: "var(--bg)",
+      borderBottom: "1px solid var(--rule)"
+    }
+  }, /*#__PURE__*/React.createElement("picture", {
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("source", {
+    media: "(max-width: 900px)",
+    srcSet: dark ? "assets/hero-dark-1400.webp" : "assets/hero-1400.webp"
+  }), /*#__PURE__*/React.createElement("img", {
+    src: dark ? "assets/hero-dark-2400.webp" : "assets/hero-2400.webp",
+    alt: "",
+    className: "sd-hero-img",
+    style: {
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      objectPosition: "center",
+      opacity: dark ? 0.62 : 1
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      maxWidth: 880,
+      padding: "3.2rem 1.5rem",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sd-hero-eyebrow",
+    style: {
+      fontFamily: FONT_HEAD.mono,
+      fontSize: "0.72rem",
+      letterSpacing: "0.18em",
+      textTransform: "uppercase",
+      color: "var(--accent)",
+      marginBottom: "1.1rem"
+    }
+  }, "Verification \xB7 Urban analytics \xB7 Causal inference"), /*#__PURE__*/React.createElement("h2", {
+    className: "sd-hero-line",
+    style: {
+      fontFamily: "var(--font-head)",
+      fontWeight: 300,
+      fontSize: "clamp(1.75rem, 4.4vw, 3.15rem)",
+      lineHeight: 1.12,
+      letterSpacing: "-0.02em",
+      margin: 0,
+      color: "var(--ink)",
+      textWrap: "balance"
+    }
+  }, "GeoAI that shows its sources", /*#__PURE__*/React.createElement("br", null), "and checks its own citations.")));
+}
 function AboutPage({
   data,
   variant,
-  onOpenProject
+  onOpenProject,
+  dark
 }) {
   const v = VARIANTS[variant];
   const stacked = v.heroLayout === "stacked";
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("header", {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Hero, {
+    dark: dark
+  }), /*#__PURE__*/React.createElement("header", {
+    className: "sd-about-header",
     style: {
       display: "flex",
       flexDirection: stacked ? "column" : "row",
@@ -510,6 +588,7 @@ function AboutPage({
       marginBottom: "3rem"
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "sd-about-main",
     style: {
       flex: 1,
       minWidth: 0,
@@ -533,7 +612,9 @@ function AboutPage({
       lineHeight: 1.5
     }
   }, data.affiliation.role, " at ", /*#__PURE__*/React.createElement("a", {
-    href: "#",
+    href: "https://polymetron-next.vercel.app",
+    target: "_blank",
+    rel: "noopener noreferrer",
     style: {
       color: "var(--accent)"
     }
@@ -603,6 +684,7 @@ function AboutPage({
     kind: "scholar",
     href: data.links.scholar
   }))), /*#__PURE__*/React.createElement("aside", {
+    className: "sd-about-aside",
     style: {
       order: stacked ? 1 : 2,
       flex: "none"
@@ -1234,10 +1316,11 @@ function CVPage({
     }
   }, /*#__PURE__*/React.createElement(SectionHeader, null, "experience"), data.experience.map((e, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
+    className: "sd-tl-row",
     style: {
       display: "grid",
-      gridTemplateColumns: "180px 1fr",
-      gap: "1.2rem",
+      gridTemplateColumns: "150px 22px 1fr",
+      gap: "1rem",
       padding: "1rem 0",
       borderBottom: i === data.experience.length - 1 ? "none" : "1px solid var(--rule)"
     }
@@ -1246,14 +1329,42 @@ function CVPage({
       fontFamily: FONT_HEAD.mono,
       fontSize: "0.78rem",
       color: "var(--ink2)",
-      paddingTop: "0.2rem"
+      paddingTop: "0.2rem",
+      textAlign: "right"
     }
   }, e.dates, /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: "0.3rem",
       color: "var(--ink2)"
     }
-  }, e.location)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, e.location)), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    style: {
+      position: "relative",
+      display: "flex",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: "absolute",
+      top: 0,
+      bottom: i === data.experience.length - 1 ? "calc(100% - 18px)" : "-1rem",
+      width: 1,
+      background: "var(--rule)"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "sd-tl-dot",
+    style: {
+      position: "absolute",
+      top: 7,
+      width: 9,
+      height: 9,
+      borderRadius: "50%",
+      background: i === 0 ? "var(--accent)" : "var(--bg)",
+      border: "1.5px solid var(--accent)",
+      boxSizing: "border-box"
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: "var(--font-head)",
       fontWeight: 500,
@@ -1400,6 +1511,7 @@ function CVPage({
     }
   }, /*#__PURE__*/React.createElement(SectionHeader, null, "technical skills"), data.skills.map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: s.group,
+    className: "sd-skill-row",
     style: {
       display: "grid",
       gridTemplateColumns: "220px 1fr",
@@ -1635,7 +1747,8 @@ function Portfolio({
   }, page === "about" && /*#__PURE__*/React.createElement(AboutPage, {
     data: PORTFOLIO_DATA,
     variant: variant,
-    onOpenProject: openProject
+    onOpenProject: openProject,
+    dark: dark
   }), page === "projects" && /*#__PURE__*/React.createElement(ProjectsPage, {
     data: PORTFOLIO_DATA,
     onOpenProject: openProject
@@ -1658,7 +1771,7 @@ function Portfolio({
     style: {
       color: "var(--accent)"
     }
-  }, "al-folio"), ". Last updated: April 2026."));
+  }, "al-folio"), ". Last updated: September 2026."));
 }
 Object.assign(window, {
   Portfolio,

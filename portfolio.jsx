@@ -245,18 +245,109 @@ function Icon({ name, size = 18, color = "currentColor", strokeWidth = 1.75 }) {
 }
 
 // ─── Pages ───────────────────────────────────────────────────────────────────
-function AboutPage({ data, variant, onOpenProject }) {
+/*
+ * Hero: a full-bleed band above the CV header. The artwork is an abstract
+ * cartographic texture, deliberately not a depiction of any real place or of
+ * any model output, since the page's argument is that claims should be
+ * checkable. It is decoration and is marked aria-hidden.
+ */
+function Hero({ dark }) {
+  return (
+    <div
+      className="sd-hero"
+      style={{
+        position: "relative",
+        width: "100vw",
+        marginLeft: "calc(50% - 50vw)",
+        marginTop: "-2.2rem",
+        marginBottom: "2.8rem",
+        minHeight: "clamp(300px, 44vh, 460px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        background: "var(--bg)",
+        borderBottom: "1px solid var(--rule)",
+      }}
+    >
+      {/* Two plates rather than a CSS filter: inverting the cream one tinted
+          the whole band brown. The dark plate is the same drawing rendered as
+          warm linework on near-black. */}
+      <picture aria-hidden="true">
+        <source
+          media="(max-width: 900px)"
+          srcSet={dark ? "assets/hero-dark-1400.webp" : "assets/hero-1400.webp"}
+        />
+        <img
+          src={dark ? "assets/hero-dark-2400.webp" : "assets/hero-2400.webp"}
+          alt=""
+          className="sd-hero-img"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: dark ? 0.62 : 1,
+          }}
+        />
+      </picture>
+
+      <div
+        style={{
+          position: "relative",
+          maxWidth: 880,
+          padding: "3.2rem 1.5rem",
+          textAlign: "center",
+        }}
+      >
+        <div
+          className="sd-hero-eyebrow"
+          style={{
+            fontFamily: FONT_HEAD.mono,
+            fontSize: "0.72rem",
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "var(--accent)",
+            marginBottom: "1.1rem",
+          }}
+        >
+          Verification · Urban analytics · Causal inference
+        </div>
+        <h2
+          className="sd-hero-line"
+          style={{
+            fontFamily: "var(--font-head)",
+            fontWeight: 300,
+            fontSize: "clamp(1.75rem, 4.4vw, 3.15rem)",
+            lineHeight: 1.12,
+            letterSpacing: "-0.02em",
+            margin: 0,
+            color: "var(--ink)",
+            textWrap: "balance",
+          }}
+        >
+          GeoAI that shows its sources<br />and checks its own citations.
+        </h2>
+      </div>
+    </div>
+  );
+}
+
+function AboutPage({ data, variant, onOpenProject, dark }) {
   const v = VARIANTS[variant];
   const stacked = v.heroLayout === "stacked";
   return (
     <div>
-      <header style={{ display: "flex", flexDirection: stacked ? "column" : "row", alignItems: "flex-start", gap: stacked ? "2rem" : "3rem", marginBottom: "3rem" }}>
-        <div style={{ flex: 1, minWidth: 0, order: stacked ? 2 : 1 }}>
+      <Hero dark={dark} />
+      <header className="sd-about-header" style={{ display: "flex", flexDirection: stacked ? "column" : "row", alignItems: "flex-start", gap: stacked ? "2rem" : "3rem", marginBottom: "3rem" }}>
+        <div className="sd-about-main" style={{ flex: 1, minWidth: 0, order: stacked ? 2 : 1 }}>
           <h1 style={{ fontFamily: "var(--font-head)", fontWeight: variant === "bold" ? 600 : 300, fontSize: variant === "bold" ? "4.6rem" : "3.2rem", lineHeight: 1.02, letterSpacing: variant === "bold" ? "-0.035em" : "-0.015em", margin: "0 0 0.8rem 0", color: "var(--ink)" }}>
             {data.name}
           </h1>
           <p style={{ fontSize: "1.05rem", color: "var(--ink2)", margin: "0 0 1.4rem 0", lineHeight: 1.5 }}>
-            {data.affiliation.role} at <a href="#" style={{ color: "var(--accent)" }}>{data.affiliation.lab}</a>, {data.affiliation.org}.
+            {data.affiliation.role} at <a href="https://polymetron-next.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent)" }}>{data.affiliation.lab}</a>, {data.affiliation.org}.
           </p>
           <div style={{ fontSize: "0.92rem", color: "var(--ink2)", display: "flex", flexWrap: "wrap", gap: "0.4rem 1.2rem", marginBottom: "1.8rem", alignItems: "center" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}><Icon name="pin" size={15} /> {data.location}</span>
@@ -272,7 +363,7 @@ function AboutPage({ data, variant, onOpenProject }) {
             {data.links.scholar && <SocialIcon kind="scholar" href={data.links.scholar} />}
           </div>
         </div>
-        <aside style={{ order: stacked ? 1 : 2, flex: "none" }}>
+        <aside className="sd-about-aside" style={{ order: stacked ? 1 : 2, flex: "none" }}>
           <ProfilePhoto shape={v.photoShape} size={variant === "bold" ? 300 : 240} />
           <div style={{ fontSize: "0.82rem", color: "var(--ink2)", marginTop: "0.9rem", lineHeight: 1.55, fontFamily: FONT_HEAD.mono, maxWidth: variant === "bold" ? 300 : 240 }}>
             CURA Lab · Tech Square<br />Georgia Tech<br />Atlanta, GA 30332
@@ -524,10 +615,36 @@ function CVPage({ data }) {
       <section style={{ marginBottom: "2.6rem" }}>
         <SectionHeader>experience</SectionHeader>
         {data.experience.map((e, i) => (
-          <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "1.2rem", padding: "1rem 0", borderBottom: i === data.experience.length - 1 ? "none" : "1px solid var(--rule)" }}>
-            <div style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.78rem", color: "var(--ink2)", paddingTop: "0.2rem" }}>
+          <div key={i} className="sd-tl-row" style={{ display: "grid", gridTemplateColumns: "150px 22px 1fr", gap: "1rem", padding: "1rem 0", borderBottom: i === data.experience.length - 1 ? "none" : "1px solid var(--rule)" }}>
+            <div style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.78rem", color: "var(--ink2)", paddingTop: "0.2rem", textAlign: "right" }}>
               {e.dates}
               <div style={{ marginTop: "0.3rem", color: "var(--ink2)" }}>{e.location}</div>
+            </div>
+            {/* Timeline rail: a continuous line with a node per role. The last
+                row stops the line at the node so the track does not dangle. */}
+            <div aria-hidden="true" style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  bottom: i === data.experience.length - 1 ? "calc(100% - 18px)" : "-1rem",
+                  width: 1,
+                  background: "var(--rule)",
+                }}
+              />
+              <span
+                className="sd-tl-dot"
+                style={{
+                  position: "absolute",
+                  top: 7,
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  background: i === 0 ? "var(--accent)" : "var(--bg)",
+                  border: "1.5px solid var(--accent)",
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
             <div>
               <div style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.05rem", color: "var(--ink)" }}>{e.role}</div>
@@ -593,7 +710,7 @@ function CVPage({ data }) {
       <section style={{ marginBottom: "2rem" }}>
         <SectionHeader>technical skills</SectionHeader>
         {data.skills.map((s, i) => (
-          <div key={s.group} style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "1.2rem", padding: "0.8rem 0", borderBottom: i === data.skills.length - 1 ? "none" : "1px solid var(--rule)", alignItems: "baseline" }}>
+          <div key={s.group} className="sd-skill-row" style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: "1.2rem", padding: "0.8rem 0", borderBottom: i === data.skills.length - 1 ? "none" : "1px solid var(--rule)", alignItems: "baseline" }}>
             <div style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "0.98rem", color: "var(--ink)" }}>{s.group}</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 0.5rem" }}>
               {s.items.map((it) => (
@@ -680,13 +797,13 @@ function Portfolio({ variant = "warm", accent, fontHead, density = "comfortable"
     <div style={wrap}>
       <TopNav page={page} setPage={(p) => { setDetailId(null); setPage(p); }} name={PORTFOLIO_DATA.shortName + " Duong"} dark={dark} setDark={setDark} />
       <main style={{ flex: 1, width: "100%", maxWidth: 880, margin: "0 auto", padding: pad, boxSizing: "border-box" }}>
-        {page === "about" && <AboutPage data={PORTFOLIO_DATA} variant={variant} onOpenProject={openProject} />}
+        {page === "about" && <AboutPage data={PORTFOLIO_DATA} variant={variant} onOpenProject={openProject} dark={dark} />}
         {page === "projects" && <ProjectsPage data={PORTFOLIO_DATA} onOpenProject={openProject} />}
         {page === "project-detail" && <ProjectDetailPage data={PORTFOLIO_DATA} projectId={detailId} onBack={backToProjects} />}
         {page === "cv" && <CVPage data={PORTFOLIO_DATA} />}
       </main>
       <footer style={{ borderTop: "1px solid var(--rule)", padding: "1.2rem 1.5rem", fontSize: "0.82rem", color: "var(--ink2)", textAlign: "center", background: "var(--surface)" }}>
-        © 2026 {PORTFOLIO_DATA.name}. Styled after <span style={{ color: "var(--accent)" }}>al-folio</span>. Last updated: April 2026.
+        © 2026 {PORTFOLIO_DATA.name}. Styled after <span style={{ color: "var(--accent)" }}>al-folio</span>. Last updated: September 2026.
       </footer>
     </div>
   );
