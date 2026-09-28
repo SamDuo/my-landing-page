@@ -1,0 +1,14 @@
+{
+  "name": "my-landing-page",
+  "private": true,
+  "description": "Sam Duong's portfolio. Static site on GitHub Pages: no runtime build step, no framework tooling in the browser.",
+  "scripts": {
+    "build": "babel --presets @babel/preset-react portfolio.jsx -o portfolio.js",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.25.0",
+    "@babel/core": "^7.25.0",
+    "@babel/preset-react": "^7.25.0"
+  }
+}

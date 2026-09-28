@@ -269,7 +269,7 @@ function AboutPage({ data, variant, onOpenProject }) {
             <SocialIcon kind="email" href={`mailto:${data.email}`} />
             <SocialIcon kind="github" href={data.links.github} />
             <SocialIcon kind="linkedin" href={data.links.linkedin} />
-            <SocialIcon kind="scholar" href={data.links.scholar} />
+            {data.links.scholar && <SocialIcon kind="scholar" href={data.links.scholar} />}
           </div>
         </div>
         <aside style={{ order: stacked ? 1 : 2, flex: "none" }}>
@@ -552,6 +552,9 @@ function CVPage({ data }) {
             <div style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.78rem", color: "var(--ink2)", paddingTop: "0.2rem" }}>{e.dates}</div>
             <div>
               <div style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.02rem", color: "var(--ink)" }}>{e.degree}</div>
+              {e.concentration && (
+                <div style={{ fontSize: "0.88rem", color: "var(--ink2)", marginTop: "0.1rem" }}>Concentration: {e.concentration}</div>
+              )}
               <div style={{ fontSize: "0.92rem", color: "var(--ink2)", marginTop: "0.1rem" }}>{e.school}{e.detail ? ` · ${e.detail}` : ""}</div>
               {e.courses && (
                 <div style={{ fontSize: "0.85rem", color: "var(--ink2)", marginTop: "0.4rem", fontStyle: "italic" }}>Coursework: {e.courses}</div>
@@ -560,6 +563,32 @@ function CVPage({ data }) {
           </div>
         ))}
       </section>
+
+      {data.publications && data.publications.length > 0 && (
+        <section style={{ marginBottom: "2.6rem" }}>
+          <SectionHeader>publications</SectionHeader>
+          {data.publications.map((pub, i) => (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "1.2rem", padding: "0.9rem 0", borderBottom: i === data.publications.length - 1 ? "none" : "1px solid var(--rule)" }}>
+              <div style={{ fontFamily: FONT_HEAD.mono, fontSize: "0.78rem", color: "var(--ink2)", paddingTop: "0.2rem" }}>
+                {pub.year}
+                <div style={{ marginTop: "0.3rem", color: "var(--accent)" }}>{pub.status}</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "var(--font-head)", fontWeight: 500, fontSize: "1.02rem", color: "var(--ink)", lineHeight: 1.35 }}>
+                  {pub.link ? (
+                    <a href={pub.link} target="_blank" rel="noopener noreferrer" style={{ borderBottom: "1px solid var(--rule)" }}>{pub.title}</a>
+                  ) : pub.title}
+                </div>
+                <div style={{ fontSize: "0.9rem", color: "var(--ink2)", marginTop: "0.25rem" }}>{pub.authors}</div>
+                <div style={{ fontSize: "0.9rem", color: "var(--ink2)", marginTop: "0.1rem", fontStyle: "italic" }}>{pub.venue}</div>
+                {pub.note && (
+                  <div style={{ fontSize: "0.85rem", color: "var(--ink2)", marginTop: "0.3rem" }}>{pub.note}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       <section style={{ marginBottom: "2rem" }}>
         <SectionHeader>technical skills</SectionHeader>
