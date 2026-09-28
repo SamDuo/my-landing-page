@@ -2,7 +2,7 @@
 window.PORTFOLIO_DATA = {
   name: "Sam Duong",
   shortName: "Sam",
-  tagline: "GeoAI for Cities · Verification · Urban Analytics",
+  tagline: "Explainable Geospatial AI · Urban Analytics",
   affiliation: {
     role: "Cofounder & Founding AI Engineer",
     lab: "Polymetron",
@@ -15,7 +15,7 @@ window.PORTFOLIO_DATA = {
     linkedin: "https://linkedin.com/in/sammduong",
     github: "https://github.com/SamDuo",
   },
-  bio: `Cofounder and Founding AI Engineer at Polymetron, where I build GeoAI that shows its sources and checks its own citations. Most of my work is the verification layer that sits under the model: adversarial and held out evaluation, governance gates that catch an agent citing the wrong jurisdiction, and regression suites that gate every release. M.S. Computer Science and M.S. Urban Analytics at Georgia Tech, certificate in Applied Machine Learning at Columbia Engineering, B.S. in Computer Information Systems at Georgia State.`,
+  bio: `Cofounder and Founding AI Engineer at Polymetron, where I build explainable geospatial AI for cities. Most of my work is the verification layer that sits under the model: adversarial and held out evaluation, governance gates that catch an agent citing the wrong jurisdiction, and regression suites that gate every release. M.S. Computer Science and M.S. Urban Analytics at Georgia Tech, certificate in Applied Machine Learning at Columbia Engineering, B.S. in Computer Information Systems at Georgia State.`,
   bioExtra: `Alongside Polymetron I am a Graduate Research Assistant and Geospatial Engineer at Georgia Tech, split between CURA, where I work on building code RAG and within metro difference in differences, and the Atlanta Food Circular Network at the I2CE Lab, where I ship a thirty layer regional spatial database and four production dashboards. Atlanta is home base, but recent work spans metro Boston and Cambridge, Portsmouth VA, New York and Tokyo. Previously Data Analyst Associate at Atlanta BeltLine, Inc.`,
   education: [
     {
@@ -224,7 +224,7 @@ window.PORTFOLIO_DATA = {
       status: "in_progress",
       heroImage: "uploads/projects/polymetron_showcase.webp",
       title: "Polymetron",
-      subtitle: "GeoAI that shows its sources and checks its own citations",
+      subtitle: "Explainable geospatial AI for the built environment",
       category: "Edge AI",
       accent: "nodes",
       summary:

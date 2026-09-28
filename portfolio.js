@@ -554,7 +554,7 @@ function Hero({
       color: "var(--accent)",
       marginBottom: "1.1rem"
     }
-  }, "Verification \xB7 Urban analytics \xB7 Causal inference"), /*#__PURE__*/React.createElement("h2", {
+  }, "Explainable AI \xB7 Geospatial \xB7 Urban analytics"), /*#__PURE__*/React.createElement("h2", {
     className: "sd-hero-line",
     style: {
       fontFamily: "var(--font-head)",
@@ -566,7 +566,7 @@ function Hero({
       color: "var(--ink)",
       textWrap: "balance"
     }
-  }, "GeoAI that shows its sources", /*#__PURE__*/React.createElement("br", null), "and checks its own citations.")));
+  }, "Explainable geospatial AI", /*#__PURE__*/React.createElement("br", null), "for cities.")));
 }
 
 /*

@@ -313,7 +313,7 @@ function Hero({ dark }) {
             marginBottom: "1.1rem",
           }}
         >
-          Verification · Urban analytics · Causal inference
+          Explainable AI · Geospatial · Urban analytics
         </div>
         <h2
           className="sd-hero-line"
@@ -328,7 +328,7 @@ function Hero({ dark }) {
             textWrap: "balance",
           }}
         >
-          GeoAI that shows its sources<br />and checks its own citations.
+          Explainable geospatial AI<br />for cities.
         </h2>
       </div>
     </div>
