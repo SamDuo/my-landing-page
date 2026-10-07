@@ -211,21 +211,21 @@ function SectionTitle({
     style: {
       ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(2rem, 5.6vw, 4rem)",
-      lineHeight: 0.94,
-      letterSpacing: "-0.035em",
+      fontSize: "clamp(2.6rem, 9.7vw, 8.75rem)",
+      lineHeight: 0.96,
+      letterSpacing: "-0.025em",
       textTransform: "uppercase",
       margin: 0,
       ...CHROME
     }
   }, children)), intro && /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: "1rem",
-      lineHeight: 1.6,
+      fontSize: "clamp(1rem, 1.25vw, 1.2rem)",
+      lineHeight: 1.55,
       color: "var(--ink-2)",
       margin: 0,
-      maxWidth: "46ch",
-      paddingBottom: "0.4rem"
+      maxWidth: "44ch",
+      paddingBottom: "0.6rem"
     }
   }, intro));
 }
@@ -301,9 +301,9 @@ function Hero({
     style: {
       ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(2.8rem, 11vw, 9rem)",
-      lineHeight: 0.86,
-      letterSpacing: "-0.05em",
+      fontSize: "clamp(3rem, 11.2vw, 10rem)",
+      lineHeight: 0.95,
+      letterSpacing: "-0.028em",
       textTransform: "uppercase",
       margin: "0 0 1.6rem 0",
       ...CHROME
@@ -311,11 +311,11 @@ function Hero({
   }, "Explainable", /*#__PURE__*/React.createElement("br", null), "geospatial AI."), /*#__PURE__*/React.createElement("p", {
     className: "sd-hero-sub",
     style: {
-      fontSize: "1.02rem",
-      lineHeight: 1.65,
+      fontSize: "clamp(1.1rem, 1.5vw, 1.35rem)",
+      lineHeight: 1.55,
       color: "var(--ink-2)",
-      maxWidth: "56ch",
-      margin: "0 0 1.9rem 0"
+      maxWidth: "52ch",
+      margin: "0 0 2.2rem 0"
     }
   }, data.bio), /*#__PURE__*/React.createElement("div", {
     className: "sd-hero-pills",
@@ -643,8 +643,8 @@ function ProjectCard({
     style: {
       ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(2.4rem, 5.6vw, 3.8rem)",
-      lineHeight: 0.82,
+      fontSize: "clamp(3rem, 7vw, 5.5rem)",
+      lineHeight: 0.84,
       letterSpacing: "-0.045em",
       flex: "none",
       ...CHROME
@@ -660,8 +660,8 @@ function ProjectCard({
     style: {
       ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(1.2rem, 3.2vw, 2rem)",
-      lineHeight: 1.0,
+      fontSize: "clamp(1.5rem, 4vw, 2.9rem)",
+      lineHeight: 0.98,
       letterSpacing: "-0.025em",
       textTransform: "uppercase",
       margin: "0.3rem 0 0",
@@ -691,10 +691,10 @@ function ProjectCard({
     }
   }, /*#__PURE__*/React.createElement("p", {
     style: {
-      fontSize: "1.02rem",
-      lineHeight: 1.55,
+      fontSize: "clamp(1.05rem, 1.35vw, 1.28rem)",
+      lineHeight: 1.5,
       color: "var(--ink)",
-      margin: "0 0 0.9rem 0"
+      margin: "0 0 1.1rem 0"
     }
   }, p.summary), support.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -703,11 +703,11 @@ function ProjectCard({
   }, support.map((line, i) => /*#__PURE__*/React.createElement("p", {
     key: i,
     style: {
-      fontSize: "0.87rem",
-      lineHeight: 1.55,
+      fontSize: "0.98rem",
+      lineHeight: 1.6,
       color: "var(--ink-2)",
       margin: 0,
-      padding: "0.6rem 0",
+      padding: "0.7rem 0",
       borderTop: "1px solid var(--line-2)"
     }
   }, line))), /*#__PURE__*/React.createElement("div", {
@@ -793,9 +793,9 @@ function Experience({
     }
   }, e.role), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.93rem",
+      fontSize: "1.02rem",
       color: "var(--accent)",
-      margin: "0.15rem 0 0.7rem"
+      margin: "0.2rem 0 0.8rem"
     }
   }, e.org), /*#__PURE__*/React.createElement("ul", {
     style: {
@@ -806,10 +806,10 @@ function Experience({
   }, e.bullets.map((b, j) => /*#__PURE__*/React.createElement("li", {
     key: j,
     style: {
-      fontSize: "0.93rem",
+      fontSize: "1.02rem",
       lineHeight: 1.6,
       color: "var(--ink-2)",
-      paddingLeft: "1rem",
+      paddingLeft: "1.1rem",
       position: "relative",
       marginBottom: "0.4rem"
     }
@@ -851,9 +851,9 @@ function Credentials({
     }
   }, e.dates), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_DISPLAY,
-      fontWeight: 700,
-      fontSize: "1.02rem",
+      ...DISPLAY,
+      fontWeight: 800,
+      fontSize: "1.3rem",
       textTransform: "uppercase",
       color: "var(--ink)"
     }
@@ -1177,9 +1177,9 @@ function Portfolio() {
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      maxWidth: 1080,
+      maxWidth: 1280,
       margin: "0 auto",
-      padding: "0 clamp(1rem, 4vw, 2.5rem)"
+      padding: "0 clamp(1rem, 3.5vw, 2.5rem)"
     }
   }, /*#__PURE__*/React.createElement(Nav, {
     name: data.shortName + " Duong",

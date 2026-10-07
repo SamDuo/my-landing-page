@@ -153,13 +153,13 @@ function SectionTitle({ children, kicker, intro }) {
         {kicker && <div style={{ marginBottom: "0.7rem" }}><Eyebrow>{kicker}</Eyebrow></div>}
         <h2 style={{
           ...DISPLAY, fontWeight: 900,
-          fontSize: "clamp(2rem, 5.6vw, 4rem)", lineHeight: 0.94,
-          letterSpacing: "-0.035em", textTransform: "uppercase",
+          fontSize: "clamp(2.6rem, 9.7vw, 8.75rem)", lineHeight: 0.96,
+          letterSpacing: "-0.025em", textTransform: "uppercase",
           margin: 0, ...CHROME,
         }}>{children}</h2>
       </div>
       {intro && (
-        <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--ink-2)", margin: 0, maxWidth: "46ch", paddingBottom: "0.4rem" }}>
+        <p style={{ fontSize: "clamp(1rem, 1.25vw, 1.2rem)", lineHeight: 1.55, color: "var(--ink-2)", margin: 0, maxWidth: "44ch", paddingBottom: "0.6rem" }}>
           {intro}
         </p>
       )}
@@ -199,15 +199,15 @@ function Hero({ data }) {
         </div>
         <h1 className="sd-hero-line" style={{
           ...DISPLAY, fontWeight: 900,
-          fontSize: "clamp(2.8rem, 11vw, 9rem)", lineHeight: 0.86,
-          letterSpacing: "-0.05em", textTransform: "uppercase",
+          fontSize: "clamp(3rem, 11.2vw, 10rem)", lineHeight: 0.95,
+          letterSpacing: "-0.028em", textTransform: "uppercase",
           margin: "0 0 1.6rem 0", ...CHROME,
         }}>
           Explainable<br />geospatial AI.
         </h1>
         <p className="sd-hero-sub" style={{
-          fontSize: "1.02rem", lineHeight: 1.65, color: "var(--ink-2)",
-          maxWidth: "56ch", margin: "0 0 1.9rem 0",
+          fontSize: "clamp(1.1rem, 1.5vw, 1.35rem)", lineHeight: 1.55, color: "var(--ink-2)",
+          maxWidth: "52ch", margin: "0 0 2.2rem 0",
         }}>
           {data.bio}
         </p>
@@ -348,14 +348,14 @@ function ProjectCard({ p, index }) {
     }}>
       <div className="sd-card-head" style={{ display: "flex", alignItems: "flex-start", gap: "1.1rem", marginBottom: "1.3rem" }}>
         <div style={{
-          ...DISPLAY, fontWeight: 900, fontSize: "clamp(2.4rem, 5.6vw, 3.8rem)",
-          lineHeight: 0.82, letterSpacing: "-0.045em", flex: "none", ...CHROME,
+          ...DISPLAY, fontWeight: 900, fontSize: "clamp(3rem, 7vw, 5.5rem)",
+          lineHeight: 0.84, letterSpacing: "-0.045em", flex: "none", ...CHROME,
         }}>{String(index + 1).length < 2 ? "0" + (index + 1) : String(index + 1)}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <Eyebrow color="var(--muted)">{p.category}</Eyebrow>
           <h3 style={{
-            ...DISPLAY, fontWeight: 900, fontSize: "clamp(1.2rem, 3.2vw, 2rem)",
-            lineHeight: 1.0, letterSpacing: "-0.025em", textTransform: "uppercase",
+            ...DISPLAY, fontWeight: 900, fontSize: "clamp(1.5rem, 4vw, 2.9rem)",
+            lineHeight: 0.98, letterSpacing: "-0.025em", textTransform: "uppercase",
             margin: "0.3rem 0 0", color: "var(--ink)",
           }}>{p.title}</h3>
         </div>
@@ -365,13 +365,13 @@ function ProjectCard({ p, index }) {
       <div className="sd-card-body" style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr", gap: "1.1rem" }}>
         <PreviewPanel p={p} accent={accent} />
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <p style={{ fontSize: "1.02rem", lineHeight: 1.55, color: "var(--ink)", margin: "0 0 0.9rem 0" }}>{p.summary}</p>
+          <p style={{ fontSize: "clamp(1.05rem, 1.35vw, 1.28rem)", lineHeight: 1.5, color: "var(--ink)", margin: "0 0 1.1rem 0" }}>{p.summary}</p>
           {support.length > 0 && (
             <div style={{ marginBottom: "0.9rem" }}>
               {support.map((line, i) => (
                 <p key={i} style={{
-                  fontSize: "0.87rem", lineHeight: 1.55, color: "var(--ink-2)",
-                  margin: 0, padding: "0.6rem 0", borderTop: "1px solid var(--line-2)",
+                  fontSize: "0.98rem", lineHeight: 1.6, color: "var(--ink-2)",
+                  margin: 0, padding: "0.7rem 0", borderTop: "1px solid var(--line-2)",
                 }}>{line}</p>
               ))}
             </div>
@@ -420,10 +420,10 @@ function Experience({ data }) {
           </div>
           <div>
             <h3 style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: "1.1rem", textTransform: "uppercase", letterSpacing: "-0.01em", margin: 0, color: "var(--ink)" }}>{e.role}</h3>
-            <div style={{ fontSize: "0.93rem", color: "var(--accent)", margin: "0.15rem 0 0.7rem" }}>{e.org}</div>
+            <div style={{ fontSize: "1.02rem", color: "var(--accent)", margin: "0.2rem 0 0.8rem" }}>{e.org}</div>
             <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
               {e.bullets.map((b, j) => (
-                <li key={j} style={{ fontSize: "0.93rem", lineHeight: 1.6, color: "var(--ink-2)", paddingLeft: "1rem", position: "relative", marginBottom: "0.4rem" }}>
+                <li key={j} style={{ fontSize: "1.02rem", lineHeight: 1.6, color: "var(--ink-2)", paddingLeft: "1.1rem", position: "relative", marginBottom: "0.4rem" }}>
                   <span style={{ position: "absolute", left: 0, color: "var(--accent)" }}>▸</span>{b}
                 </li>
               ))}
@@ -447,7 +447,7 @@ function Credentials({ data }) {
         }}>
           <div style={{ fontFamily: FONT_MONO, fontSize: "0.74rem", color: "var(--muted)" }}>{e.dates}</div>
           <div>
-            <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: "1.02rem", textTransform: "uppercase", color: "var(--ink)" }}>{e.degree}</div>
+            <div style={{ ...DISPLAY, fontWeight: 800, fontSize: "1.3rem", textTransform: "uppercase", color: "var(--ink)" }}>{e.degree}</div>
             {e.concentration && <div style={{ fontSize: "0.88rem", color: "var(--ink-2)", marginTop: "0.1rem" }}>Concentration: {e.concentration}</div>}
             <div style={{ fontSize: "0.9rem", color: "var(--ink-2)", marginTop: "0.1rem" }}>{e.school}{e.detail ? " · " + e.detail : ""}</div>
           </div>
@@ -574,7 +574,7 @@ function Portfolio() {
       background: "var(--bg)", color: "var(--ink)", fontFamily: FONT_BODY,
       minHeight: "100%", width: "100%",
     }}>
-      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 clamp(1rem, 4vw, 2.5rem)" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 clamp(1rem, 3.5vw, 2.5rem)" }}>
         <Nav name={data.shortName + " Duong"} theme={theme} toggle={toggle} />
         <Hero data={data} />
         <Research data={data} />
