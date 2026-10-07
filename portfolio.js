@@ -435,6 +435,7 @@ function PreviewPanel({
 }) {
   const metrics = p.metrics || [];
   const flow = p.flow || [];
+  const img = p.heroImage;
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: "var(--plate)",
@@ -449,13 +450,25 @@ function PreviewPanel({
       height: 2,
       background: "linear-gradient(90deg, " + accent + ", transparent)"
     }
+  }), img && /*#__PURE__*/React.createElement("img", {
+    src: img,
+    alt: p.title + " screenshot",
+    loading: "lazy",
+    style: {
+      width: "100%",
+      aspectRatio: "21 / 10",
+      objectFit: "cover",
+      objectPosition: "top center",
+      display: "block",
+      borderBottom: "1px solid var(--line-2)"
+    }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
       padding: "0.6rem 0.8rem",
-      borderBottom: "1px solid var(--line-2)"
+      borderBottom: metrics.length || !img ? "1px solid var(--line-2)" : "none"
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -463,7 +476,7 @@ function PreviewPanel({
       alignItems: "center",
       gap: "0.45rem",
       fontFamily: FONT_MONO,
-      fontSize: "0.6rem",
+      fontSize: "0.62rem",
       letterSpacing: "0.1em",
       textTransform: "uppercase",
       color: "var(--ink-2)"
@@ -479,19 +492,19 @@ function PreviewPanel({
   }), p.category), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: FONT_MONO,
-      fontSize: "0.56rem",
+      fontSize: "0.58rem",
       letterSpacing: "0.12em",
       textTransform: "uppercase",
       color: "var(--muted)"
     }
-  }, "Preview")), /*#__PURE__*/React.createElement("div", {
+  }, img ? "Live" : "Preview")), (metrics.length > 0 || !img) && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: metrics.length ? "1fr 1.15fr" : "1fr",
-      gap: "0.7rem",
-      padding: "0.8rem"
+      gridTemplateColumns: !img && metrics.length ? "1fr 1.15fr" : "1fr",
+      gap: "0.8rem",
+      padding: "0.85rem"
     }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, !img && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: FONT_MONO,
       fontSize: "0.54rem",
@@ -502,12 +515,11 @@ function PreviewPanel({
     }
   }, "System"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_DISPLAY,
-      fontWeight: 800,
-      fontSize: "0.95rem",
-      lineHeight: 1.1,
+      ...DISPLAY,
+      fontWeight: 900,
+      fontSize: "1.05rem",
+      lineHeight: 1.08,
       textTransform: "uppercase",
-      letterSpacing: "-0.01em",
       color: "var(--ink)",
       marginBottom: "0.7rem"
     }
@@ -529,10 +541,16 @@ function PreviewPanel({
       borderRadius: 5,
       padding: "0.26rem 0.4rem"
     }
-  }, t)))), metrics.length > 0 && /*#__PURE__*/React.createElement("div", null, metrics.map(m => /*#__PURE__*/React.createElement("div", {
+  }, t)))), metrics.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: img ? "repeat(" + metrics.length + ", 1fr)" : "1fr",
+      gap: img ? "0.9rem" : "0"
+    }
+  }, metrics.map(m => /*#__PURE__*/React.createElement("div", {
     key: m.label,
     style: {
-      marginBottom: "0.6rem"
+      marginBottom: img ? 0 : "0.6rem"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -544,24 +562,23 @@ function PreviewPanel({
       letterSpacing: "0.05em",
       textTransform: "uppercase",
       color: "var(--ink-2)",
-      marginBottom: "0.22rem"
+      marginBottom: "0.25rem"
     }
-  }, /*#__PURE__*/React.createElement("span", null, m.label), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, m.label)), /*#__PURE__*/React.createElement("div", {
     style: {
-      color: "var(--ink)"
+      ...DISPLAY,
+      fontWeight: 900,
+      fontSize: "1.25rem",
+      lineHeight: 1,
+      color: "var(--ink)",
+      marginBottom: "0.3rem"
     }
-  }, m.value)), /*#__PURE__*/React.createElement("div", {
+  }, m.value), /*#__PURE__*/React.createElement("div", {
     style: {
-      height: 3,
-      background: "var(--line-2)",
-      borderRadius: 2
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 3,
-      width: (m.pct || 100) + "%",
+      height: 2,
       background: accent,
-      borderRadius: 2
+      borderRadius: 2,
+      opacity: 0.75
     }
   })))), flow.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -570,7 +587,7 @@ function PreviewPanel({
       letterSpacing: "0.12em",
       textTransform: "uppercase",
       color: "var(--muted)",
-      margin: "0.7rem 0 0.4rem"
+      margin: "0.9rem 0 0.4rem"
     }
   }, "Flow"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -583,13 +600,13 @@ function PreviewPanel({
     style: {
       border: "1px solid var(--line-2)",
       borderRadius: 6,
-      padding: "0.35rem 0.3rem",
+      padding: "0.4rem 0.3rem",
       textAlign: "center"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: 15,
-      height: 15,
+      width: 16,
+      height: 16,
       borderRadius: "50%",
       background: accent,
       color: "#fff",
@@ -598,13 +615,13 @@ function PreviewPanel({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      margin: "0 auto 0.25rem"
+      margin: "0 auto 0.3rem"
     }
   }, i + 1), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: FONT_MONO,
       fontSize: "0.5rem",
-      lineHeight: 1.2,
+      lineHeight: 1.25,
       textTransform: "uppercase",
       color: "var(--ink-2)"
     }
@@ -714,8 +731,7 @@ function ProjectCard({
     style: {
       display: "flex",
       flexWrap: "wrap",
-      gap: "0.35rem",
-      marginTop: "auto"
+      gap: "0.35rem"
     }
   }, (p.tags || []).map(t => /*#__PURE__*/React.createElement(Chip, {
     key: t

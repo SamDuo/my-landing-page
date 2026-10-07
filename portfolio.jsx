@@ -272,64 +272,81 @@ function Research({ data }) {
 function PreviewPanel({ p, accent }) {
   const metrics = p.metrics || [];
   const flow = p.flow || [];
+  const img = p.heroImage;
   return (
     <div style={{
       background: "var(--plate)", border: "1px solid var(--line)", borderRadius: 14,
       overflow: "hidden", display: "flex", flexDirection: "column",
     }}>
       <div style={{ height: 2, background: "linear-gradient(90deg, " + accent + ", transparent)" }} />
+
+      {/* Real screenshot of the running thing where one exists. It leads, because
+          for this work the evidence is better than any diagram of it. */}
+      {img && (
+        <img src={img} alt={p.title + " screenshot"} loading="lazy"
+             style={{ width: "100%", aspectRatio: "21 / 10", objectFit: "cover", objectPosition: "top center", display: "block", borderBottom: "1px solid var(--line-2)" }} />
+      )}
+
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0.6rem 0.8rem", borderBottom: "1px solid var(--line-2)",
+        padding: "0.6rem 0.8rem", borderBottom: (metrics.length || !img) ? "1px solid var(--line-2)" : "none",
       }}>
-        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.45rem", fontFamily: FONT_MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-2)" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.45rem", fontFamily: FONT_MONO, fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-2)" }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: accent, display: "inline-block" }} />
           {p.category}
         </span>
-        <span style={{ fontFamily: FONT_MONO, fontSize: "0.56rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>Preview</span>
+        <span style={{ fontFamily: FONT_MONO, fontSize: "0.58rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)" }}>
+          {img ? "Live" : "Preview"}
+        </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: metrics.length ? "1fr 1.15fr" : "1fr", gap: "0.7rem", padding: "0.8rem" }}>
-        <div>
-          <div style={{ fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.4rem" }}>System</div>
-          <div style={{ fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: "0.95rem", lineHeight: 1.1, textTransform: "uppercase", letterSpacing: "-0.01em", color: "var(--ink)", marginBottom: "0.7rem" }}>
-            {p.title}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-            {(p.tags || []).slice(0, 4).map((t) => (
-              <div key={t} style={{ fontFamily: FONT_MONO, fontSize: "0.56rem", letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--ink-2)", border: "1px solid var(--line-2)", borderRadius: 5, padding: "0.26rem 0.4rem" }}>{t}</div>
-            ))}
-          </div>
-        </div>
-
-        {metrics.length > 0 && (
-          <div>
-            {metrics.map((m) => (
-              <div key={m.label} style={{ marginBottom: "0.6rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: "0.4rem", fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--ink-2)", marginBottom: "0.22rem" }}>
-                  <span>{m.label}</span><span style={{ color: "var(--ink)" }}>{m.value}</span>
-                </div>
-                <div style={{ height: 3, background: "var(--line-2)", borderRadius: 2 }}>
-                  <div style={{ height: 3, width: (m.pct || 100) + "%", background: accent, borderRadius: 2 }} />
-                </div>
+      {(metrics.length > 0 || !img) && (
+        <div style={{ display: "grid", gridTemplateColumns: (!img && metrics.length) ? "1fr 1.15fr" : "1fr", gap: "0.8rem", padding: "0.85rem" }}>
+          {/* The system/tag block is only needed when there is no screenshot to
+              carry the card visually; with an image it just repeats the title. */}
+          {!img && (
+            <div>
+              <div style={{ fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.4rem" }}>System</div>
+              <div style={{ ...DISPLAY, fontWeight: 900, fontSize: "1.05rem", lineHeight: 1.08, textTransform: "uppercase", color: "var(--ink)", marginBottom: "0.7rem" }}>{p.title}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {(p.tags || []).slice(0, 4).map((t) => (
+                  <div key={t} style={{ fontFamily: FONT_MONO, fontSize: "0.56rem", letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--ink-2)", border: "1px solid var(--line-2)", borderRadius: 5, padding: "0.26rem 0.4rem" }}>{t}</div>
+                ))}
               </div>
-            ))}
-            {flow.length > 0 && (
-              <div>
-                <div style={{ fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", margin: "0.7rem 0 0.4rem" }}>Flow</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(" + flow.length + ", 1fr)", gap: "0.35rem" }}>
-                  {flow.map((f, i) => (
-                    <div key={f} style={{ border: "1px solid var(--line-2)", borderRadius: 6, padding: "0.35rem 0.3rem", textAlign: "center" }}>
-                      <div style={{ width: 15, height: 15, borderRadius: "50%", background: accent, color: "#fff", fontFamily: FONT_MONO, fontSize: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.25rem" }}>{i + 1}</div>
-                      <div style={{ fontFamily: FONT_MONO, fontSize: "0.5rem", lineHeight: 1.2, textTransform: "uppercase", color: "var(--ink-2)" }}>{f}</div>
+            </div>
+          )}
+
+          {metrics.length > 0 && (
+            <div>
+              <div style={{ display: "grid", gridTemplateColumns: img ? "repeat(" + metrics.length + ", 1fr)" : "1fr", gap: img ? "0.9rem" : "0" }}>
+                {metrics.map((m) => (
+                  <div key={m.label} style={{ marginBottom: img ? 0 : "0.6rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: "0.4rem", fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.05em", textTransform: "uppercase", color: "var(--ink-2)", marginBottom: "0.25rem" }}>
+                      <span>{m.label}</span>
                     </div>
-                  ))}
-                </div>
+                    <div style={{ ...DISPLAY, fontWeight: 900, fontSize: "1.25rem", lineHeight: 1, color: "var(--ink)", marginBottom: "0.3rem" }}>{m.value}</div>
+                    <div style={{ height: 2, background: accent, borderRadius: 2, opacity: 0.75 }} />
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        )}
-      </div>
+
+              {flow.length > 0 && (
+                <div>
+                  <div style={{ fontFamily: FONT_MONO, fontSize: "0.54rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--muted)", margin: "0.9rem 0 0.4rem" }}>Flow</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(" + flow.length + ", 1fr)", gap: "0.35rem" }}>
+                    {flow.map((f, i) => (
+                      <div key={f} style={{ border: "1px solid var(--line-2)", borderRadius: 6, padding: "0.4rem 0.3rem", textAlign: "center" }}>
+                        <div style={{ width: 16, height: 16, borderRadius: "50%", background: accent, color: "#fff", fontFamily: FONT_MONO, fontSize: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.3rem" }}>{i + 1}</div>
+                        <div style={{ fontFamily: FONT_MONO, fontSize: "0.5rem", lineHeight: 1.25, textTransform: "uppercase", color: "var(--ink-2)" }}>{f}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -376,7 +393,7 @@ function ProjectCard({ p, index }) {
               ))}
             </div>
           )}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "auto" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
             {(p.tags || []).map((t) => <Chip key={t}>{t}</Chip>)}
           </div>
         </div>
