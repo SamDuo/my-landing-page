@@ -526,27 +526,56 @@ function Resume({ data }) {
 const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"], ["resume", "Resume"]];
 
 function Nav({ name, theme, toggle }) {
+  // Scroll spy: the filled pill tracks the section you are actually in, so the
+  // nav says where you are rather than only where you can go.
+  const [active, setActive] = useState("");
+  useEffect(() => {
+    let io;
+    try {
+      io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => { if (e.isIntersecting) setActive(e.target.id); });
+        },
+        { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+      );
+      NAV_ITEMS.forEach((it) => {
+        const el = document.getElementById(it[0]);
+        if (el) io.observe(el);
+      });
+    } catch (e) { /* no scroll spy; the nav still navigates */ }
+    return () => { try { io && io.disconnect(); } catch (e) {} };
+  }, []);
+
   return (
     <nav style={{
       position: "sticky", top: 0, zIndex: 20, background: "var(--bg)",
-      borderBottom: "1px solid var(--line)", padding: "0.75rem 0",
+      borderBottom: "1px solid var(--line)", padding: "0.8rem 0",
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem",
     }}>
       <a href="#top" style={{
-        fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: "0.86rem",
-        letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink)", textDecoration: "none",
+        ...DISPLAY, fontWeight: 900, fontSize: "0.95rem",
+        letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink)", textDecoration: "none",
       }}>{name}</a>
-      <div className="sd-nav-links" style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
-        {NAV_ITEMS.map((it) => (
-          <a key={it[0]} href={"#" + it[0]} style={{
-            fontFamily: FONT_MONO, fontSize: "0.68rem", letterSpacing: "0.1em",
-            textTransform: "uppercase", color: "var(--ink-2)", textDecoration: "none",
-            padding: "0.4rem 0.55rem", borderRadius: 999,
-          }}>{it[1]}</a>
-        ))}
+      <div className="sd-nav-links" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+        {NAV_ITEMS.map((it) => {
+          const on = active === it[0];
+          return (
+            <a key={it[0]} href={"#" + it[0]} className="sd-navlink" style={{
+              fontFamily: FONT_MONO, fontSize: "0.68rem", letterSpacing: "0.1em",
+              textTransform: "uppercase", textDecoration: "none",
+              padding: "0.5rem 0.95rem", borderRadius: 999,
+              border: "1px solid " + (on ? "var(--line)" : "transparent"),
+              background: on ? "var(--bg-2)" : "transparent",
+              color: on ? "var(--ink)" : "var(--ink-2)",
+              transition: "background 220ms ease, color 220ms ease, border-color 220ms ease",
+            }}>{it[1]}</a>
+          );
+        })}
         <button onClick={toggle} title="Toggle theme" aria-label="Toggle colour theme" style={{
-          background: "transparent", border: "1px solid var(--line)", borderRadius: 999,
-          padding: "0.35rem 0.6rem", cursor: "pointer", color: "var(--ink)", fontSize: "0.8rem", marginLeft: "0.35rem",
+          background: "transparent", border: "1px solid var(--line)", borderRadius: "50%",
+          width: 36, height: 36, display: "inline-flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "var(--ink)", fontSize: "0.85rem", marginLeft: "0.5rem", flex: "none",
+          transition: "background 220ms ease, border-color 220ms ease",
         }}>{theme === "dark" ? "☀" : "☾"}</button>
       </div>
     </nav>
