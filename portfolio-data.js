@@ -119,6 +119,12 @@ window.PORTFOLIO_DATA = {
   projects: [
     {
       id: "polymetron_agent",
+      metrics: [
+        { label: "Replayable workflows", value: "12" },
+        { label: "Cited tools", value: "16" },
+        { label: "Agents", value: "5" },
+      ],
+      flow: ["Plan", "Run cited tools", "Trace brief"],
       featured: true,
       status: "in_progress",
       heroImage: "uploads/projects/polymetron_agent.webp",
@@ -134,6 +140,12 @@ window.PORTFOLIO_DATA = {
     },
     {
       id: "city360_cambridge",
+      metrics: [
+        { label: "Parcels published", value: "12,933" },
+        { label: "Zones", value: "261" },
+        { label: "Tests on the portal", value: "1,161" },
+      ],
+      flow: ["Ingest city data", "Publish dashboard", "Resident submissions"],
       featured: true,
       status: "completed",
       heroImage: "uploads/projects/city360_dashboard.webp",
@@ -220,6 +232,12 @@ window.PORTFOLIO_DATA = {
     },
     {
       id: "polymetron",
+      metrics: [
+        { label: "Code passages indexed", value: "12,550" },
+        { label: "Regression checks", value: "232" },
+        { label: "Planted violations caught", value: "41 / 41" },
+      ],
+      flow: ["Retrieve", "Governance gate", "Cited answer"],
       featured: true,
       status: "in_progress",
       heroImage: "uploads/projects/polymetron_showcase.webp",

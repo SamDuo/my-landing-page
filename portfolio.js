@@ -1,1444 +1,748 @@
-/* global React, PORTFOLIO_DATA */
-// al-folio style portfolio with project detail pages modeled on
-// ryanhlewis/serverlessportfolio. Variant: classic | warm | bold.
+/* global React */
+/*
+ * Sam Duong — portfolio v2.
+ *
+ * Structural grammar borrowed from a reference portfolio Sam admires: oversized
+ * condensed display type, numbered project cards with a synthetic "preview" panel,
+ * a per-card accent rotation, pill navigation with one filled CTA. None of that
+ * site's code, markup, classes or assets are used; this is original and carries
+ * Sam's own content, typeface and palette.
+ *
+ * Two readers, one surface (plan D7): hiring managers scan Projects, admissions
+ * readers scan Research. Research therefore sits ABOVE Projects.
+ *
+ * ARCHITECTURE NOTE: the browser loads the PRECOMPILED portfolio.js, never this
+ * file. After editing, run `npm run build` or nothing changes on the live site.
+ *
+ * MOTION CONTRACT (motion.js): no CSS hides anything. Elements on screen use
+ * gsap.from(); below-fold elements are pre-hidden with gsap.set() and restored by
+ * teardown(). With scripts blocked or prefers-reduced-motion, the page renders
+ * complete and static.
+ */
 
 const {
   useState,
   useEffect,
-  useMemo
+  useCallback
 } = React;
 
-// ─── Theme primitives ────────────────────────────────────────────────────────
-const VARIANTS = {
-  classic: {
-    label: "Classic",
-    bg: "#ffffff",
-    surface: "#ffffff",
-    ink: "#000000",
-    ink2: "#828282",
-    rule: "#e8e8e8",
-    accent: "#b509ac",
-    fontHead: "serif",
-    photoShape: "rounded",
-    heroLayout: "right"
+// ─── Tokens ──────────────────────────────────────────────────────────────────
+// One source of truth for both themes. Light keeps a hint of the old warm cream
+// so the site still reads as Sam's; dark supplies the contrast the layout needs.
+const THEMES = {
+  dark: {
+    "--bg": "#0b0d0e",
+    "--bg-2": "#101314",
+    "--surface": "#15191b",
+    "--ink": "#e9eef1",
+    "--ink-2": "#9aa8b1",
+    "--muted": "#6d7c85",
+    "--line": "#242c31",
+    "--line-2": "#1a2024",
+    "--accent": "#f0631f",
+    "--plate": "#0e1112"
   },
-  warm: {
-    label: "Warm",
-    bg: "#faf6f0",
-    surface: "#fffdf8",
-    ink: "#1a1512",
-    ink2: "#736a61",
-    rule: "#e4ddd0",
-    accent: "#c2410c",
-    fontHead: "serif",
-    photoShape: "circle",
-    heroLayout: "right"
-  },
-  bold: {
-    label: "Bold",
-    bg: "#ffffff",
-    surface: "#ffffff",
-    ink: "#0a0a0a",
-    ink2: "#6b6b6b",
-    rule: "#111111",
-    accent: "#ff3d2e",
-    fontHead: "display",
-    photoShape: "square",
-    heroLayout: "stacked"
+  light: {
+    "--bg": "#fbfaf8",
+    "--bg-2": "#f4f2ee",
+    "--surface": "#ffffff",
+    "--ink": "#15181a",
+    "--ink-2": "#4d5a63",
+    "--muted": "#76838c",
+    "--line": "#e3e2de",
+    "--line-2": "#eeedea",
+    "--accent": "#c2410c",
+    "--plate": "#f7f5f2"
   }
 };
-const FONT_HEAD = {
-  serif: `"Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif`,
-  sans: `"Inter Tight", "Inter", -apple-system, system-ui, sans-serif`,
-  display: `"Fraunces", "Source Serif 4", Georgia, serif`,
-  mono: `"JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace`
-};
-const FONT_BODY = `"Source Sans 3", "Source Sans Pro", -apple-system, system-ui, "Segoe UI", Roboto, sans-serif`;
 
-// ─── Little pieces ───────────────────────────────────────────────────────────
-function SectionHeader({
+// Per-card accent ramp. Each project card carries its own hue on the status dot,
+// the top hairline, the metric fills and the flow badges.
+const RAMP = ["#f0631f", "#2a9d8f", "#4a8fe7", "#c77dff", "#e9b949", "#5ec28a"];
+const FONT_DISPLAY = '"Archivo", Impact, "Arial Narrow", sans-serif';
+const FONT_BODY = '"Source Sans 3", -apple-system, system-ui, sans-serif';
+const FONT_MONO = '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+
+// ─── Theme engine ────────────────────────────────────────────────────────────
+function useTheme() {
+  const read = () => {
+    try {
+      const saved = localStorage.getItem("sd-theme");
+      if (saved === "light" || saved === "dark") return saved;
+    } catch (e) {}
+    try {
+      return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    } catch (e) {}
+    return "dark";
+  };
+  const [theme, setTheme] = useState(read);
+  useEffect(() => {
+    const t = THEMES[theme] || THEMES.dark;
+    const root = document.documentElement;
+    Object.keys(t).forEach(k => root.style.setProperty(k, t[k]));
+    root.setAttribute("data-theme", theme);
+    document.body.style.background = t["--bg"];
+    document.body.style.color = t["--ink"];
+    try {
+      localStorage.setItem("sd-theme", theme);
+    } catch (e) {}
+  }, [theme]);
+  const toggle = useCallback(() => setTheme(v => v === "dark" ? "light" : "dark"), []);
+  return [theme, toggle];
+}
+
+// ─── Primitives ──────────────────────────────────────────────────────────────
+function Pill({
+  href,
+  children,
+  filled,
+  onClick,
+  small
+}) {
+  const base = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.45rem",
+    padding: small ? "0.34rem 0.8rem" : "0.5rem 1rem",
+    borderRadius: 999,
+    fontFamily: FONT_MONO,
+    fontSize: small ? "0.68rem" : "0.74rem",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    textDecoration: "none",
+    cursor: "pointer",
+    transition: "background 220ms ease, border-color 220ms ease, transform 220ms ease"
+  };
+  const style = filled ? {
+    ...base,
+    background: "var(--accent)",
+    color: "#fff",
+    border: "1px solid var(--accent)"
+  } : {
+    ...base,
+    background: "transparent",
+    color: "var(--ink)",
+    border: "1px solid var(--line)"
+  };
+  if (href) {
+    const ext = href.indexOf("http") === 0;
+    return /*#__PURE__*/React.createElement("a", {
+      className: "sd-pill",
+      style: style,
+      href: href,
+      target: ext ? "_blank" : undefined,
+      rel: ext ? "noopener noreferrer" : undefined
+    }, children);
+  }
+  return /*#__PURE__*/React.createElement("button", {
+    className: "sd-pill",
+    style: style,
+    onClick: onClick,
+    type: "button"
+  }, children);
+}
+function Chip({
   children
 }) {
-  return /*#__PURE__*/React.createElement("h2", {
+  return /*#__PURE__*/React.createElement("span", {
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "1.8rem",
-      color: "var(--ink)",
-      margin: "0 0 1.2rem 0",
-      paddingBottom: "0.55rem",
-      borderBottom: "1px solid var(--rule)",
-      letterSpacing: "-0.01em"
+      fontFamily: FONT_MONO,
+      fontSize: "0.64rem",
+      letterSpacing: "0.06em",
+      textTransform: "uppercase",
+      padding: "0.22rem 0.55rem",
+      borderRadius: 999,
+      border: "1px solid var(--line)",
+      color: "var(--ink-2)",
+      whiteSpace: "nowrap"
     }
   }, children);
 }
-function ProfilePhoto({
-  shape,
-  size = 260
+function Eyebrow({
+  children,
+  color
 }) {
-  const radius = shape === "circle" ? size / 2 : shape === "square" ? 0 : 14;
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      width: size,
-      height: size,
-      borderRadius: radius,
-      overflow: "hidden",
-      position: "relative",
-      boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)",
-      flex: "none",
-      background: "#d9d4cd"
+      fontFamily: FONT_MONO,
+      fontSize: "0.68rem",
+      letterSpacing: "0.18em",
+      textTransform: "uppercase",
+      color: color || "var(--accent)"
     }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "assets/profile.png",
-    alt: "Samuel Duong",
-    style: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      display: "block"
-    }
-  }));
+  }, children);
 }
-function getComputedAccent() {
-  try {
-    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c2410c";
-  } catch {
-    return "#c2410c";
-  }
+function SectionTitle({
+  children,
+  kicker
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "2.2rem"
+    }
+  }, kicker && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "0.7rem"
+    }
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, kicker)), /*#__PURE__*/React.createElement("h2", {
+    style: {
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: "clamp(2rem, 5.2vw, 3.6rem)",
+      lineHeight: 0.98,
+      letterSpacing: "-0.03em",
+      textTransform: "uppercase",
+      margin: 0,
+      color: "var(--ink)"
+    }
+  }, children));
 }
 
-// ─── Project thumbnails (SVG) ────────────────────────────────────────────────
-function ProjectThumb({
-  kind
-}) {
-  const accent = getComputedAccent();
-  const w = 520,
-    h = 260;
-  if (kind === "mapgrid") {
-    return /*#__PURE__*/React.createElement("svg", {
-      viewBox: `0 0 ${w} ${h}`,
-      width: "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid slice"
-    }, /*#__PURE__*/React.createElement("rect", {
-      width: w,
-      height: h,
-      fill: "#f1ece4"
-    }), [...Array(20)].map((_, i) => /*#__PURE__*/React.createElement("line", {
-      key: "v" + i,
-      x1: i * w / 20,
-      y1: 0,
-      x2: i * w / 20,
-      y2: h,
-      stroke: "#d8cfbc",
-      strokeWidth: "0.5"
-    })), [...Array(10)].map((_, i) => /*#__PURE__*/React.createElement("line", {
-      key: "h" + i,
-      y1: i * h / 10,
-      x1: 0,
-      y2: i * h / 10,
-      x2: w,
-      stroke: "#d8cfbc",
-      strokeWidth: "0.5"
-    })), [...Array(8)].map((_, i) => /*#__PURE__*/React.createElement("path", {
-      key: "c" + i,
-      d: `M 0 ${30 + i * 28} Q ${w / 3} ${10 + i * 28} ${w * 2 / 3} ${40 + i * 28} T ${w} ${25 + i * 28}`,
-      fill: "none",
-      stroke: accent,
-      strokeWidth: "1.2",
-      opacity: 0.5
-    })), [...Array(120)].map((_, i) => {
-      const x = i * 37 % w,
-        y = i * 53 % h,
-        r = 1.5 + i * 7 % 3;
-      const hot = i * 11 % 5 === 0;
-      return /*#__PURE__*/React.createElement("circle", {
-        key: i,
-        cx: x,
-        cy: y,
-        r: r,
-        fill: hot ? accent : "#7a8cad",
-        opacity: hot ? 0.85 : 0.5
-      });
-    }));
-  }
-  if (kind === "nodes") {
-    const nodes = [...Array(22)].map((_, i) => ({
-      x: 30 + i * 97 % (w - 60),
-      y: 20 + i * 41 % (h - 40)
-    }));
-    return /*#__PURE__*/React.createElement("svg", {
-      viewBox: `0 0 ${w} ${h}`,
-      width: "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid slice"
-    }, /*#__PURE__*/React.createElement("rect", {
-      width: w,
-      height: h,
-      fill: "#fafafa"
-    }), nodes.map((n, i) => nodes.slice(i + 1).map((m, j) => {
-      const d = Math.hypot(n.x - m.x, n.y - m.y);
-      if (d > 100) return null;
-      return /*#__PURE__*/React.createElement("line", {
-        key: `${i}-${j}`,
-        x1: n.x,
-        y1: n.y,
-        x2: m.x,
-        y2: m.y,
-        stroke: accent,
-        strokeWidth: "0.6",
-        opacity: "0.4"
-      });
-    })), nodes.map((n, i) => /*#__PURE__*/React.createElement("circle", {
-      key: i,
-      cx: n.x,
-      cy: n.y,
-      r: i % 3 === 0 ? 6 : 3.5,
-      fill: i % 3 === 0 ? accent : "#333"
-    })));
-  }
-  if (kind === "transit") {
-    return /*#__PURE__*/React.createElement("svg", {
-      viewBox: `0 0 ${w} ${h}`,
-      width: "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid slice"
-    }, /*#__PURE__*/React.createElement("rect", {
-      width: w,
-      height: h,
-      fill: "#eef2f6"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: `M 20 ${h / 2} L 200 ${h / 2 - 40} L 320 ${h / 2 + 20} L 500 ${h / 2 - 10}`,
-      fill: "none",
-      stroke: accent,
-      strokeWidth: "3"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: `M 40 40 L 180 140 L 280 80 L 480 220`,
-      fill: "none",
-      stroke: "#2b3a55",
-      strokeWidth: "2.5"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: `M 10 200 L 150 200 L 260 150 L 400 180 L 510 120`,
-      fill: "none",
-      stroke: "#2b3a55",
-      strokeWidth: "2.5",
-      strokeDasharray: "6 4"
-    }), [...Array(30)].map((_, i) => {
-      const x = 20 + i * 29 % (w - 40);
-      const y = 20 + i * 53 % (h - 40);
-      return /*#__PURE__*/React.createElement("circle", {
-        key: i,
-        cx: x,
-        cy: y,
-        r: "3",
-        fill: i % 4 === 0 ? accent : "#2b3a55"
-      });
-    }));
-  }
-  if (kind === "gentrify") {
-    return /*#__PURE__*/React.createElement("svg", {
-      viewBox: `0 0 ${w} ${h}`,
-      width: "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid slice"
-    }, /*#__PURE__*/React.createElement("rect", {
-      width: w,
-      height: h,
-      fill: "#f7f5f0"
-    }), [...Array(8)].map((_, row) => [...Array(16)].map((__, col) => {
-      const idx = row * 16 + col;
-      const cats = [accent, "#9ca2ad", "#3d4f6b"];
-      const fill = cats[idx % 3];
-      return /*#__PURE__*/React.createElement("rect", {
-        key: `${row}-${col}`,
-        x: col * (w / 16),
-        y: row * (h / 8),
-        width: w / 16 - 1,
-        height: h / 8 - 1,
-        fill: fill,
-        opacity: 0.35 + idx * 7 % 5 * 0.12
-      });
-    })));
-  }
-  if (kind === "heritage") {
-    return /*#__PURE__*/React.createElement("svg", {
-      viewBox: `0 0 ${w} ${h}`,
-      width: "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid slice"
-    }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
-      id: "sky-h",
-      x1: "0",
-      x2: "0",
-      y1: "0",
-      y2: "1"
-    }, /*#__PURE__*/React.createElement("stop", {
-      offset: "0%",
-      stopColor: "#f4c98a"
-    }), /*#__PURE__*/React.createElement("stop", {
-      offset: "100%",
-      stopColor: "#c97a4a"
-    }))), /*#__PURE__*/React.createElement("rect", {
-      width: w,
-      height: h,
-      fill: "url(#sky-h)"
-    }), /*#__PURE__*/React.createElement("circle", {
-      cx: w * 0.75,
-      cy: h * 0.35,
-      r: "38",
-      fill: "#ffe9b0",
-      opacity: "0.9"
-    }), /*#__PURE__*/React.createElement("g", {
-      fill: "#6b3b22"
-    }, /*#__PURE__*/React.createElement("rect", {
-      x: "40",
-      y: "160",
-      width: "18",
-      height: "80"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "80",
-      y: "140",
-      width: "18",
-      height: "100"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "120",
-      y: "150",
-      width: "18",
-      height: "90"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "180",
-      y: "120",
-      width: "22",
-      height: "120"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "220",
-      y: "145",
-      width: "18",
-      height: "95"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "260",
-      y: "165",
-      width: "18",
-      height: "75"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "320",
-      y: "135",
-      width: "22",
-      height: "105"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "360",
-      y: "170",
-      width: "18",
-      height: "70"
-    }), /*#__PURE__*/React.createElement("rect", {
-      x: "400",
-      y: "150",
-      width: "18",
-      height: "90"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: `M 30 240 L 500 240 L 500 260 L 30 260 Z`,
-      fill: "#4a2814"
-    })));
-  }
-  // dots default
+// Low-opacity survey marks in the negative space. Decorative only.
+function Decor() {
   return /*#__PURE__*/React.createElement("svg", {
-    viewBox: `0 0 ${w} ${h}`,
+    "aria-hidden": "true",
     width: "100%",
     height: "100%",
-    preserveAspectRatio: "xMidYMid slice"
-  }, /*#__PURE__*/React.createElement("rect", {
-    width: w,
-    height: h,
-    fill: "#f5f5f5"
-  }), [...Array(280)].map((_, i) => {
-    const x = i * 13 % w,
-      y = i * 23 % h,
-      hot = i * 7 % 11 === 0;
-    return /*#__PURE__*/React.createElement("circle", {
-      key: i,
-      cx: x,
-      cy: y,
-      r: hot ? 3 : 1.3,
-      fill: hot ? accent : "#bbb"
-    });
-  }));
-}
-
-// ─── Icon set (Lucide style line icons, 24x24, stroke 1.75) ──────────────────
-const ICON_PATHS = {
-  map: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M15 5.764v15"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M9 3.236v15"
-  })),
-  building: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10 6h4"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10 10h4"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10 14h4"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10 18h4"
-  })),
-  search: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("circle", {
-    cx: "11",
-    cy: "11",
-    r: "8"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "m21 21-4.3-4.3"
-  })),
-  chart: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M3 3v16a2 2 0 0 0 2 2h16"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "m19 9-5 5-4-4-3 3"
-  })),
-  satellite: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M13 7 9 3 5 7l4 4"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "m17 11 4 4-4 4-4-4"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "m8 12 4 4 6-6-4-4Z"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "m16 8 3-3"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M9 21a6 6 0 0 0-6-6"
-  })),
-  bus: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M8 6v6"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M15 6v6"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M2 12h19.6"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2L20.7 5.2c-.3-1.4-1.6-2.4-3-2.4H6.3c-1.5 0-2.7 1-3 2.4L1.4 12.8c-.1.4-.1.8-.1 1.2s.1.8.2 1.2C1.9 16.3 2 18 2 18h3"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "7",
-    cy: "18",
-    r: "2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M9 18h5"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "16",
-    cy: "18",
-    r: "2"
-  })),
-  pin: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("path", {
-    d: "M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "12",
-    cy: "10",
-    r: "3"
-  })),
-  cpu: /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("rect", {
-    width: "16",
-    height: "16",
-    x: "4",
-    y: "4",
-    rx: "2"
-  }), /*#__PURE__*/React.createElement("rect", {
-    width: "6",
-    height: "6",
-    x: "9",
-    y: "9",
-    rx: "1"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M15 2v2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M15 20v2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M2 15h2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M2 9h2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M20 15h2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M20 9h2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M9 2v2"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M9 20v2"
-  }))
-};
-function Icon({
-  name,
-  size = 18,
-  color = "currentColor",
-  strokeWidth = 1.75
-}) {
-  const path = ICON_PATHS[name];
-  if (!path) return null;
-  return /*#__PURE__*/React.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: color,
-    strokeWidth: strokeWidth,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-    style: {
-      flexShrink: 0,
-      display: "inline-block",
-      verticalAlign: "middle"
-    }
-  }, path);
-}
-
-// ─── Pages ───────────────────────────────────────────────────────────────────
-/*
- * Hero: a full-bleed band above the CV header. The artwork is an abstract
- * cartographic texture, deliberately not a depiction of any real place or of
- * any model output, since the page's argument is that claims should be
- * checkable. It is decoration and is marked aria-hidden.
- */
-function Hero({
-  dark
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "sd-hero",
-    style: {
-      position: "relative",
-      width: "100vw",
-      marginLeft: "calc(50% - 50vw)",
-      marginTop: "-2.2rem",
-      marginBottom: "2.8rem",
-      minHeight: "clamp(300px, 44vh, 460px)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      background: "var(--bg)",
-      borderBottom: "1px solid var(--rule)"
-    }
-  }, /*#__PURE__*/React.createElement("picture", {
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("source", {
-    media: "(max-width: 900px)",
-    srcSet: dark ? "assets/hero-dark-1400.webp" : "assets/hero-1400.webp"
-  }), /*#__PURE__*/React.createElement("img", {
-    src: dark ? "assets/hero-dark-2400.webp" : "assets/hero-2400.webp",
-    alt: "",
-    className: "sd-hero-img",
     style: {
       position: "absolute",
       inset: 0,
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      objectPosition: "center",
-      opacity: dark ? 0.62 : 1
+      pointerEvents: "none",
+      opacity: 0.55
     }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "relative",
-      maxWidth: 880,
-      padding: "3.2rem 1.5rem",
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "sd-hero-eyebrow",
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.72rem",
-      letterSpacing: "0.18em",
-      textTransform: "uppercase",
-      color: "var(--accent)",
-      marginBottom: "1.1rem"
-    }
-  }, "Explainable AI \xB7 Geospatial \xB7 Urban analytics"), /*#__PURE__*/React.createElement("h2", {
-    className: "sd-hero-line",
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 300,
-      fontSize: "clamp(1.75rem, 4.4vw, 3.15rem)",
-      lineHeight: 1.12,
-      letterSpacing: "-0.02em",
-      margin: 0,
-      color: "var(--ink)",
-      textWrap: "balance"
-    }
-  }, "Explainable geospatial AI", /*#__PURE__*/React.createElement("br", null), "for cities.")));
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("pattern", {
+    id: "sd-dots",
+    width: "26",
+    height: "26",
+    patternUnits: "userSpaceOnUse"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "1.5",
+    cy: "1.5",
+    r: "1.1",
+    fill: "var(--line)"
+  }))), /*#__PURE__*/React.createElement("rect", {
+    x: "64%",
+    y: "6%",
+    width: "34%",
+    height: "48%",
+    fill: "url(#sd-dots)"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "88%",
+    cy: "24%",
+    r: "58",
+    fill: "none",
+    stroke: "var(--line)",
+    strokeWidth: "1"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "88%",
+    cy: "24%",
+    r: "20",
+    fill: "none",
+    stroke: "var(--accent)",
+    strokeWidth: "1",
+    opacity: "0.5"
+  }));
 }
 
-/*
- * A compact "by the numbers" band. Every figure here is one already claimed
- * elsewhere on this page or in the CV; the band restates them, it does not
- * introduce new ones. data-count is what motion.js animates.
- */
-const STATS = [{
-  n: 12550,
-  suffix: "",
-  label: "building code passages indexed"
-}, {
-  n: 12933,
-  suffix: "",
-  label: "parcels published publicly"
-}, {
-  n: 30,
-  suffix: "",
-  label: "spatial layers in production"
-}, {
-  n: 3,
-  suffix: "",
-  label: "papers accepted or under review"
-}];
-function StatsBand() {
-  return /*#__PURE__*/React.createElement("section", {
-    className: "sd-stats",
-    style: {
-      marginBottom: "3rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(4, 1fr)",
-      gap: "1.4rem",
-      padding: "1.5rem 0",
-      borderTop: "1px solid var(--rule)",
-      borderBottom: "1px solid var(--rule)"
-    }
-  }, STATS.map(s => /*#__PURE__*/React.createElement("div", {
-    key: s.label
-  }, /*#__PURE__*/React.createElement("div", {
-    "data-count": s.n,
-    "data-suffix": s.suffix,
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "clamp(1.5rem, 3vw, 2.1rem)",
-      lineHeight: 1,
-      color: "var(--accent)",
-      letterSpacing: "-0.02em",
-      fontVariantNumeric: "tabular-nums"
-    }
-  }, s.n.toLocaleString(), s.suffix), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.72rem",
-      lineHeight: 1.4,
-      color: "var(--ink2)",
-      marginTop: "0.5rem"
-    }
-  }, s.label)))));
-}
-function AboutPage({
-  data,
-  variant,
-  onOpenProject,
-  dark
+// ─── Hero ────────────────────────────────────────────────────────────────────
+function Hero({
+  data
 }) {
-  const v = VARIANTS[variant];
-  const stacked = v.heroLayout === "stacked";
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Hero, {
-    dark: dark
-  }), /*#__PURE__*/React.createElement("header", {
-    className: "sd-about-header",
+  return /*#__PURE__*/React.createElement("header", {
+    className: "sd-hero",
     style: {
-      display: "flex",
-      flexDirection: stacked ? "column" : "row",
-      alignItems: "flex-start",
-      gap: stacked ? "2rem" : "3rem",
-      marginBottom: "3rem"
+      position: "relative",
+      paddingTop: "clamp(3rem, 9vh, 6rem)",
+      paddingBottom: "clamp(2.5rem, 7vh, 4.5rem)",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement(Decor, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative"
     }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "sd-about-main",
     style: {
-      flex: 1,
-      minWidth: 0,
-      order: stacked ? 2 : 1
+      marginBottom: "1.4rem"
     }
-  }, /*#__PURE__*/React.createElement("h1", {
+  }, /*#__PURE__*/React.createElement(Eyebrow, null, data.tagline)), /*#__PURE__*/React.createElement("h1", {
+    className: "sd-hero-line",
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: variant === "bold" ? 600 : 300,
-      fontSize: variant === "bold" ? "4.6rem" : "3.2rem",
-      lineHeight: 1.02,
-      letterSpacing: variant === "bold" ? "-0.035em" : "-0.015em",
-      margin: "0 0 0.8rem 0",
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 900,
+      fontSize: "clamp(2.6rem, 10.5vw, 8.5rem)",
+      lineHeight: 0.88,
+      letterSpacing: "-0.045em",
+      textTransform: "uppercase",
+      margin: "0 0 1.6rem 0",
       color: "var(--ink)"
     }
-  }, data.name), /*#__PURE__*/React.createElement("p", {
+  }, "Explainable", /*#__PURE__*/React.createElement("br", null), "geospatial AI."), /*#__PURE__*/React.createElement("p", {
+    className: "sd-hero-sub",
     style: {
-      fontSize: "1.05rem",
-      color: "var(--ink2)",
-      margin: "0 0 1.4rem 0",
-      lineHeight: 1.5
+      fontSize: "1.02rem",
+      lineHeight: 1.65,
+      color: "var(--ink-2)",
+      maxWidth: "56ch",
+      margin: "0 0 1.9rem 0"
     }
-  }, data.affiliation.role, " at ", /*#__PURE__*/React.createElement("a", {
-    href: "https://polymetron-next.vercel.app",
+  }, data.bio), /*#__PURE__*/React.createElement("div", {
+    className: "sd-hero-pills",
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.6rem",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement(Pill, {
+    href: "#research",
+    filled: true
+  }, "Research"), /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.github
+  }, "GitHub"), /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.linkedin
+  }, "LinkedIn"), /*#__PURE__*/React.createElement(Pill, {
+    href: "mailto:" + data.email
+  }, "Email"))));
+}
+
+// ─── Research (above Projects — the admissions reader scans here first) ──────
+const METHODS = ["Difference-in-differences", "Triple-difference", "Bunching / notch estimation", "Placebo design", "Bootstrap confidence intervals", "Spatial eigenvector filtering", "Retrieval benchmarking", "SHAP / GeoShapley"];
+function Research({
+  data
+}) {
+  return /*#__PURE__*/React.createElement("section", {
+    id: "research",
+    style: {
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "Peer-reviewed and in progress"
+  }, "Research"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "1.06rem",
+      lineHeight: 1.6,
+      color: "var(--ink)",
+      maxWidth: "62ch",
+      margin: "0 0 1.6rem 0"
+    }
+  }, "I study how regulatory thresholds and infrastructure rules reshape what gets built, and who carries the cost. The instruments I build are how I measure it."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.4rem",
+      marginBottom: "2.4rem"
+    }
+  }, METHODS.map(m => /*#__PURE__*/React.createElement(Chip, {
+    key: m
+  }, m))), data.publications.map((pub, i) => /*#__PURE__*/React.createElement("article", {
+    key: i,
+    className: "sd-pub",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "150px 1fr",
+      gap: "1.4rem",
+      padding: "1.4rem 0",
+      borderTop: "1px solid var(--line)"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.76rem",
+      color: "var(--muted)"
+    }
+  }, pub.year), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.66rem",
+      color: "var(--accent)",
+      marginTop: "0.35rem",
+      lineHeight: 1.45,
+      textTransform: "uppercase",
+      letterSpacing: "0.06em"
+    }
+  }, pub.status)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      fontFamily: FONT_BODY,
+      fontWeight: 600,
+      fontSize: "1.05rem",
+      lineHeight: 1.35,
+      margin: 0,
+      color: "var(--ink)"
+    }
+  }, pub.link ? /*#__PURE__*/React.createElement("a", {
+    href: pub.link,
     target: "_blank",
     rel: "noopener noreferrer",
     style: {
-      color: "var(--accent)"
+      color: "inherit",
+      borderBottom: "1px solid var(--line)",
+      textDecoration: "none"
     }
-  }, data.affiliation.lab), ", ", data.affiliation.org, "."), /*#__PURE__*/React.createElement("div", {
+  }, pub.title) : pub.title), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: "0.92rem",
-      color: "var(--ink2)",
+      color: "var(--ink-2)",
+      marginTop: "0.3rem"
+    }
+  }, pub.authors), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "0.9rem",
+      color: "var(--muted)",
+      fontStyle: "italic",
+      marginTop: "0.15rem"
+    }
+  }, pub.venue), pub.note && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "0.86rem",
+      color: "var(--muted)",
+      marginTop: "0.4rem"
+    }
+  }, pub.note)))));
+}
+
+// ─── Project card: the signature device ──────────────────────────────────────
+// Left column is a generated panel describing the system, not a screenshot.
+// Metric bars render ONLY where real numbers exist in the data (plan D5):
+// nothing here is invented to fill the pattern.
+function PreviewPanel({
+  p,
+  accent
+}) {
+  const metrics = p.metrics || [];
+  const flow = p.flow || [];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "var(--plate)",
+      border: "1px solid var(--line)",
+      borderRadius: 14,
+      overflow: "hidden",
       display: "flex",
-      flexWrap: "wrap",
-      gap: "0.4rem 1.2rem",
-      marginBottom: "1.8rem",
-      alignItems: "center"
+      flexDirection: "column"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 2,
+      background: "linear-gradient(90deg, " + accent + ", transparent)"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0.6rem 0.8rem",
+      borderBottom: "1px solid var(--line-2)"
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       display: "inline-flex",
       alignItems: "center",
-      gap: "0.35rem"
-    }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: "pin",
-    size: 15
-  }), " ", data.location), /*#__PURE__*/React.createElement("a", {
-    href: `tel:${data.phone}`,
-    style: {
-      color: "inherit"
-    }
-  }, data.phone), /*#__PURE__*/React.createElement("a", {
-    href: `mailto:${data.email}`,
-    style: {
-      color: "inherit"
-    }
-  }, data.email)), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: "1rem",
-      lineHeight: 1.7,
-      color: "var(--ink)",
-      margin: "0 0 1rem 0",
-      maxWidth: "62ch"
-    }
-  }, data.bio), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: "1rem",
-      lineHeight: 1.7,
-      color: "var(--ink)",
-      margin: 0,
-      maxWidth: "62ch"
-    }
-  }, data.bioExtra), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: "1.6rem",
-      display: "flex",
-      gap: "1.1rem",
-      fontSize: "1.2rem",
-      color: "var(--ink2)"
-    }
-  }, /*#__PURE__*/React.createElement(SocialIcon, {
-    kind: "email",
-    href: `mailto:${data.email}`
-  }), /*#__PURE__*/React.createElement(SocialIcon, {
-    kind: "github",
-    href: data.links.github
-  }), /*#__PURE__*/React.createElement(SocialIcon, {
-    kind: "linkedin",
-    href: data.links.linkedin
-  }), data.links.scholar && /*#__PURE__*/React.createElement(SocialIcon, {
-    kind: "scholar",
-    href: data.links.scholar
-  }))), /*#__PURE__*/React.createElement("aside", {
-    className: "sd-about-aside",
-    style: {
-      order: stacked ? 1 : 2,
-      flex: "none"
-    }
-  }, /*#__PURE__*/React.createElement(ProfilePhoto, {
-    shape: v.photoShape,
-    size: variant === "bold" ? 300 : 240
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "0.82rem",
-      color: "var(--ink2)",
-      marginTop: "0.9rem",
-      lineHeight: 1.55,
-      fontFamily: FONT_HEAD.mono,
-      maxWidth: variant === "bold" ? 300 : 240
-    }
-  }, "CURA Lab \xB7 Tech Square", /*#__PURE__*/React.createElement("br", null), "Georgia Tech", /*#__PURE__*/React.createElement("br", null), "Atlanta, GA 30332"))), /*#__PURE__*/React.createElement(StatsBand, null), /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "3rem"
-    }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "research interests"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1.8rem 2.4rem"
-    }
-  }, data.interests.map(it => /*#__PURE__*/React.createElement("div", {
-    key: it.title
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.55rem",
-      marginBottom: "0.35rem"
+      gap: "0.45rem",
+      fontFamily: FONT_MONO,
+      fontSize: "0.6rem",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+      color: "var(--ink-2)"
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      color: "var(--accent)",
-      display: "inline-flex"
+      width: 7,
+      height: 7,
+      borderRadius: "50%",
+      background: accent,
+      display: "inline-block"
     }
-  }, /*#__PURE__*/React.createElement(Icon, {
-    name: it.icon,
-    size: 20
-  })), /*#__PURE__*/React.createElement("h3", {
+  }), p.category), /*#__PURE__*/React.createElement("span", {
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.05rem",
-      margin: 0,
-      color: "var(--ink)"
+      fontFamily: FONT_MONO,
+      fontSize: "0.56rem",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: "var(--muted)"
     }
-  }, it.title)), /*#__PURE__*/React.createElement("p", {
-    style: {
-      margin: 0,
-      fontSize: "0.92rem",
-      lineHeight: 1.55,
-      color: "var(--ink2)"
-    }
-  }, it.body))))), /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "3rem"
-    }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "selected projects"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column"
-    }
-  }, data.projects.filter(p => p.featured).slice(0, 4).map((p, i) => /*#__PURE__*/React.createElement("button", {
-    key: p.id,
-    onClick: () => onOpenProject(p.id),
+  }, "Preview")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "90px 1fr auto",
-      gap: "1.2rem",
-      padding: "0.9rem 0",
-      borderTop: i === 0 ? "none" : "1px solid var(--rule)",
-      background: "none",
-      border: "none",
-      borderTopWidth: i === 0 ? 0 : 1,
-      borderTopStyle: "solid",
-      borderTopColor: "var(--rule)",
-      textAlign: "left",
-      cursor: "pointer",
-      color: "inherit",
-      fontFamily: "inherit",
-      alignItems: "baseline"
+      gridTemplateColumns: metrics.length ? "1fr 1.15fr" : "1fr",
+      gap: "0.7rem",
+      padding: "0.8rem"
     }
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.78rem",
-      color: "var(--ink2)",
-      paddingTop: "0.2rem"
+      fontFamily: FONT_MONO,
+      fontSize: "0.54rem",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: "var(--muted)",
+      marginBottom: "0.4rem"
     }
-  }, "0", i + 1, " \u2197"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "System"), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.02rem",
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: "0.95rem",
+      lineHeight: 1.1,
+      textTransform: "uppercase",
+      letterSpacing: "-0.01em",
       color: "var(--ink)",
-      marginBottom: "0.25rem"
+      marginBottom: "0.7rem"
     }
   }, p.title), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.9rem",
-      color: "var(--ink2)",
-      lineHeight: 1.5
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.3rem"
     }
-  }, p.summary)), /*#__PURE__*/React.createElement("div", {
+  }, (p.tags || []).slice(0, 4).map(t => /*#__PURE__*/React.createElement("div", {
+    key: t,
     style: {
-      fontSize: "0.8rem",
-      color: "var(--accent)",
-      whiteSpace: "nowrap"
+      fontFamily: FONT_MONO,
+      fontSize: "0.56rem",
+      letterSpacing: "0.05em",
+      textTransform: "uppercase",
+      color: "var(--ink-2)",
+      border: "1px solid var(--line-2)",
+      borderRadius: 5,
+      padding: "0.26rem 0.4rem"
     }
-  }, "read \u2192"))))));
+  }, t)))), metrics.length > 0 && /*#__PURE__*/React.createElement("div", null, metrics.map(m => /*#__PURE__*/React.createElement("div", {
+    key: m.label,
+    style: {
+      marginBottom: "0.6rem"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      gap: "0.4rem",
+      fontFamily: FONT_MONO,
+      fontSize: "0.54rem",
+      letterSpacing: "0.05em",
+      textTransform: "uppercase",
+      color: "var(--ink-2)",
+      marginBottom: "0.22rem"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, m.label), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--ink)"
+    }
+  }, m.value)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      background: "var(--line-2)",
+      borderRadius: 2
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      width: (m.pct || 100) + "%",
+      background: accent,
+      borderRadius: 2
+    }
+  })))), flow.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.54rem",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: "var(--muted)",
+      margin: "0.7rem 0 0.4rem"
+    }
+  }, "Flow"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(" + flow.length + ", 1fr)",
+      gap: "0.35rem"
+    }
+  }, flow.map((f, i) => /*#__PURE__*/React.createElement("div", {
+    key: f,
+    style: {
+      border: "1px solid var(--line-2)",
+      borderRadius: 6,
+      padding: "0.35rem 0.3rem",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 15,
+      height: 15,
+      borderRadius: "50%",
+      background: accent,
+      color: "#fff",
+      fontFamily: FONT_MONO,
+      fontSize: "0.5rem",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "0 auto 0.25rem"
+    }
+  }, i + 1), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.5rem",
+      lineHeight: 1.2,
+      textTransform: "uppercase",
+      color: "var(--ink-2)"
+    }
+  }, f))))))));
 }
 function ProjectCard({
   p,
-  onOpenProject
+  index
 }) {
-  return /*#__PURE__*/React.createElement("button", {
-    key: p.id,
-    onClick: () => onOpenProject(p.id),
-    className: "proj-card",
+  const accent = RAMP[index % RAMP.length];
+  const href = p.live || p.github || null;
+  return /*#__PURE__*/React.createElement("article", {
+    className: "sd-card",
     style: {
-      border: "1px solid var(--rule)",
-      borderRadius: 10,
-      overflow: "hidden",
-      background: "var(--surface)",
+      border: "1px solid var(--line)",
+      borderRadius: 22,
+      padding: "clamp(1.1rem, 2.6vw, 1.9rem)",
+      background: "var(--bg-2)",
+      marginBottom: "1.5rem"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sd-card-head",
+    style: {
       display: "flex",
-      flexDirection: "column",
-      cursor: "pointer",
-      textAlign: "left",
-      padding: 0,
-      color: "inherit",
-      fontFamily: "inherit",
-      transition: "transform 0.15s ease, box-shadow 0.15s ease"
-    },
-    onMouseEnter: e => {
-      e.currentTarget.style.transform = "translateY(-2px)";
-      e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
-    },
-    onMouseLeave: e => {
-      e.currentTarget.style.transform = "none";
-      e.currentTarget.style.boxShadow = "none";
+      alignItems: "flex-start",
+      gap: "1.1rem",
+      marginBottom: "1.3rem"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      aspectRatio: "21/10",
-      background: "#eee",
-      position: "relative"
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 900,
+      fontSize: "clamp(2.2rem, 5vw, 3.4rem)",
+      lineHeight: 0.85,
+      letterSpacing: "-0.04em",
+      color: "var(--ink)",
+      flex: "none"
     }
-  }, p.heroImage ? /*#__PURE__*/React.createElement("img", {
-    src: p.heroImage,
-    alt: p.title,
+  }, String(index + 1).length < 2 ? "0" + (index + 1) : String(index + 1)), /*#__PURE__*/React.createElement("div", {
     style: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      display: "block"
+      flex: 1,
+      minWidth: 0
     }
-  }) : /*#__PURE__*/React.createElement(ProjectThumb, {
-    kind: p.accent
-  }), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Eyebrow, {
+    color: "var(--muted)"
+  }, p.category), /*#__PURE__*/React.createElement("h3", {
     style: {
-      position: "absolute",
-      top: 8,
-      left: 8,
-      background: "rgba(0,0,0,0.55)",
-      color: "#fff",
-      fontSize: "0.72rem",
-      padding: "0.2rem 0.6rem",
-      borderRadius: 999,
-      fontFamily: FONT_HEAD.mono
-    }
-  }, p.category), p.status && p.status !== "completed" && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 8,
-      right: 8,
-      background: p.status === "in_progress" ? "rgba(194,65,12,0.92)" : "rgba(115,106,97,0.92)",
-      color: "#fff",
-      fontSize: "0.68rem",
-      padding: "0.18rem 0.55rem",
-      borderRadius: 999,
-      fontFamily: FONT_HEAD.mono,
-      letterSpacing: "0.06em",
-      textTransform: "uppercase"
-    }
-  }, p.status === "in_progress" ? "In Progress" : "Planned")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "1rem 1.1rem 1.2rem"
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.1rem",
-      margin: "0 0 0.3rem 0",
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: "clamp(1.15rem, 3vw, 1.85rem)",
+      lineHeight: 1.02,
+      letterSpacing: "-0.02em",
+      textTransform: "uppercase",
+      margin: "0.3rem 0 0",
       color: "var(--ink)"
     }
-  }, p.title), /*#__PURE__*/React.createElement("div", {
+  }, p.title)), href && /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.82rem",
-      color: "var(--accent)",
-      marginBottom: "0.5rem",
-      fontStyle: "italic"
+      flex: "none"
     }
-  }, p.subtitle), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement(Pill, {
+    href: href,
+    small: true
+  }, "Visit \u2197"))), /*#__PURE__*/React.createElement("div", {
+    className: "sd-card-body",
     style: {
-      margin: "0 0 0.8rem 0",
-      fontSize: "0.88rem",
-      lineHeight: 1.55,
-      color: "var(--ink2)"
+      display: "grid",
+      gridTemplateColumns: "0.85fr 1fr",
+      gap: "1.1rem"
+    }
+  }, /*#__PURE__*/React.createElement(PreviewPanel, {
+    p: p,
+    accent: accent
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "0.97rem",
+      lineHeight: 1.6,
+      color: "var(--ink)",
+      margin: "0 0 0.9rem 0"
     }
   }, p.summary), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
-      gap: "0.4rem"
+      gap: "0.35rem"
     }
-  }, p.tags.slice(0, 4).map(t => /*#__PURE__*/React.createElement("span", {
-    key: t,
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.7rem",
-      padding: "0.15rem 0.5rem",
-      border: "1px solid var(--rule)",
-      borderRadius: 999,
-      color: "var(--ink2)"
-    }
-  }, t)), p.tags.length > 4 && /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.7rem",
-      color: "var(--ink2)"
-    }
-  }, p.tags.length - 4, " more"))));
+  }, (p.tags || []).map(t => /*#__PURE__*/React.createElement(Chip, {
+    key: t
+  }, t))))));
 }
-function ProjectsPage({
-  data,
-  onOpenProject
-}) {
-  const [filter, setFilter] = useState("all");
-  const categories = useMemo(() => ["all", ...new Set(data.projects.map(p => p.category))], [data]);
-  const visible = filter === "all" ? data.projects : data.projects.filter(p => p.category === filter);
-  const selected = visible.filter(p => p.featured && p.category !== "ML Systems");
-  const mlSystems = visible.filter(p => p.category === "ML Systems");
-  const more = visible.filter(p => !p.featured && p.category !== "ML Systems");
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 300,
-      fontSize: "2.6rem",
-      margin: "0 0 0.4rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.015em"
-    }
-  }, "projects"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--ink2)",
-      fontSize: "1rem",
-      margin: "0 0 1.6rem 0",
-      maxWidth: "62ch"
-    }
-  }, "Research, coursework, and applied work across spatial analytics, urban policy, and GeoAI. Click any card to read more."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "0.4rem",
-      marginBottom: "2rem"
-    }
-  }, categories.map(c => /*#__PURE__*/React.createElement("button", {
-    key: c,
-    onClick: () => setFilter(c),
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.75rem",
-      padding: "0.3rem 0.7rem",
-      borderRadius: 999,
-      border: "1px solid var(--rule)",
-      background: filter === c ? "var(--accent)" : "transparent",
-      color: filter === c ? "#fff" : "var(--ink2)",
-      cursor: "pointer",
-      textTransform: "lowercase"
-    }
-  }, c))), selected.length > 0 && /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "2.4rem"
-    }
-  }, /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "1.5rem",
-      margin: "0 0 1rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.01em"
-    }
-  }, "Selected Projects"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1.6rem"
-    }
-  }, selected.map(p => /*#__PURE__*/React.createElement(ProjectCard, {
-    key: p.id,
-    p: p,
-    onOpenProject: onOpenProject
-  })))), mlSystems.length > 0 && /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "2.4rem"
-    }
-  }, /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "1.5rem",
-      margin: "0 0 0.3rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.01em"
-    }
-  }, "ML Systems"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "var(--ink2)",
-      fontSize: "0.92rem",
-      margin: "0 0 1rem 0",
-      maxWidth: "62ch"
-    }
-  }, "Mobile and TinyML builds in progress and on the roadmap. On-device vision, audio, and motion models that extend Polymetron from the browser into the field."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1.6rem"
-    }
-  }, mlSystems.map(p => /*#__PURE__*/React.createElement(ProjectCard, {
-    key: p.id,
-    p: p,
-    onOpenProject: onOpenProject
-  })))), more.length > 0 && /*#__PURE__*/React.createElement("section", null, /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "1.5rem",
-      margin: "0 0 1rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.01em"
-    }
-  }, "More Projects"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(2, 1fr)",
-      gap: "1.6rem"
-    }
-  }, more.map(p => /*#__PURE__*/React.createElement(ProjectCard, {
-    key: p.id,
-    p: p,
-    onOpenProject: onOpenProject
-  })))));
-}
-function ProjectDetailPage({
-  data,
-  projectId,
-  onBack
-}) {
-  const project = data.projects.find(p => p.id === projectId);
-  if (!project) return /*#__PURE__*/React.createElement("div", null, "Project not found.");
-  return /*#__PURE__*/React.createElement("article", null, /*#__PURE__*/React.createElement("button", {
-    onClick: onBack,
-    style: {
-      background: "none",
-      border: "none",
-      color: "var(--accent)",
-      fontSize: "0.95rem",
-      cursor: "pointer",
-      padding: "0 0 1.2rem 0",
-      fontFamily: "inherit"
-    }
-  }, "\u2190 Back to Projects"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "1rem",
-      marginBottom: "1.8rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "flex-start",
-      justifyContent: "space-between",
-      gap: "1rem",
-      flexWrap: "wrap"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.75rem",
-      color: "var(--accent)",
-      textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      marginBottom: "0.5rem"
-    }
-  }, project.category), /*#__PURE__*/React.createElement("h1", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "3rem",
-      margin: "0 0 0.3rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.02em",
-      lineHeight: 1.05
-    }
-  }, project.title), /*#__PURE__*/React.createElement("h2", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 400,
-      fontSize: "1.25rem",
-      margin: 0,
-      color: "var(--ink2)",
-      fontStyle: "italic"
-    }
-  }, project.subtitle)), project.github && /*#__PURE__*/React.createElement("a", {
-    href: project.github,
-    target: "_blank",
-    rel: "noopener noreferrer",
-    style: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      background: "var(--ink)",
-      color: "var(--bg)",
-      padding: "0.55rem 0.9rem",
-      borderRadius: 6,
-      fontSize: "0.9rem",
-      fontWeight: 500,
-      textDecoration: "none"
-    }
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "16",
-    height: "16",
-    viewBox: "0 0 24 24",
-    fill: "currentColor"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.084-.73.084-.73 1.205.084 1.84 1.236 1.84 1.236 1.07 1.834 2.807 1.303 3.492.997.108-.775.417-1.303.76-1.603-2.665-.305-5.466-1.332-5.466-5.93 0-1.31.47-2.38 1.236-3.22-.124-.304-.536-1.527.117-3.176 0 0 1.01-.322 3.301 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.29-1.552 3.3-1.23 3.3-1.23 .653 1.649.242 2.872.118 3.176.767.84 1.235 1.91 1.235 3.22 0 4.61-2.807 5.62-5.479 5.92.43.37.81 1.102.81 2.222 0 1.604-.014 2.896-.014 3.286 0 .317.22.686.82.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-  })), "View on GitHub")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "0.4rem"
-    }
-  }, project.tags.map(t => /*#__PURE__*/React.createElement("span", {
-    key: t,
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.72rem",
-      padding: "0.2rem 0.55rem",
-      border: "1px solid var(--rule)",
-      borderRadius: 4,
-      color: "var(--ink2)"
-    }
-  }, t)))), project.embedUrl ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: "1.8rem"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: "100%",
-      height: project.embedHeight || "80vh",
-      borderRadius: 10,
-      overflow: "hidden",
-      border: "1px solid var(--rule)",
-      background: "#fafafa"
-    }
-  }, /*#__PURE__*/React.createElement("iframe", {
-    src: project.embedUrl,
-    title: project.title,
-    loading: "lazy",
-    style: {
-      width: "100%",
-      height: "100%",
-      border: "none",
-      display: "block"
-    },
-    allow: "fullscreen"
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: "0.5rem",
-      fontSize: "0.85rem",
-      color: "var(--ink2)",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: "0.5rem"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontStyle: "italic"
-    }
-  }, "Scroll inside the frame to read the story. The map and charts are live."), /*#__PURE__*/React.createElement("a", {
-    href: project.embedUrl,
-    target: "_blank",
-    rel: "noopener noreferrer",
-    style: {
-      color: "var(--accent)",
-      textDecoration: "none",
-      fontWeight: 500
-    }
-  }, "Open full story \u2197"))) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: "100%",
-      aspectRatio: "21/9",
-      borderRadius: 10,
-      overflow: "hidden",
-      border: "1px solid var(--rule)",
-      marginBottom: "1.8rem",
-      background: "#eee"
-    }
-  }, project.heroImage ? /*#__PURE__*/React.createElement("img", {
-    src: project.heroImage,
-    alt: project.title,
-    style: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      display: "block"
-    }
-  }) : /*#__PURE__*/React.createElement(ProjectThumb, {
-    kind: project.accent
-  })), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: "1.05rem",
-      lineHeight: 1.7,
-      color: "var(--ink)",
-      marginTop: 0,
-      maxWidth: "65ch"
-    }
-  }, project.summary), project.sections.map((s, i) => /*#__PURE__*/React.createElement("section", {
-    key: i,
-    style: {
-      marginTop: "2rem"
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.4rem",
-      margin: "0 0 0.7rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.01em"
-    }
-  }, s.heading), s.body && /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: "0.98rem",
-      lineHeight: 1.7,
-      color: "var(--ink)",
-      margin: 0,
-      maxWidth: "65ch"
-    }
-  }, s.body), s.list && /*#__PURE__*/React.createElement("ul", {
-    style: {
-      margin: "0.3rem 0 0 0",
-      padding: 0,
-      listStyle: "none"
-    }
-  }, s.list.map((item, j) => /*#__PURE__*/React.createElement("li", {
-    key: j,
-    style: {
-      fontSize: "0.95rem",
-      lineHeight: 1.6,
-      color: "var(--ink)",
-      paddingLeft: "1.2rem",
-      position: "relative",
-      marginBottom: "0.45rem",
-      maxWidth: "65ch"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      position: "absolute",
-      left: 0,
-      color: "var(--accent)"
-    }
-  }, "\u25B8"), item))), s.image && /*#__PURE__*/React.createElement("figure", {
-    style: {
-      margin: "1rem 0 0 0",
-      padding: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: "100%",
-      borderRadius: 8,
-      overflow: "hidden",
-      border: "1px solid var(--rule)",
-      background: "#fafafa"
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: s.image,
-    alt: s.caption || s.heading,
-    style: {
-      width: "100%",
-      height: "auto",
-      display: "block"
-    }
-  })), s.caption && /*#__PURE__*/React.createElement("figcaption", {
-    style: {
-      fontSize: "0.82rem",
-      color: "var(--ink2)",
-      fontStyle: "italic",
-      marginTop: "0.5rem",
-      maxWidth: "65ch"
-    }
-  }, s.caption)))));
-}
-function CVPage({
+function Projects({
   data
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+  const [showAll, setShowAll] = useState(false);
+  const featured = data.projects.filter(p => p.featured);
+  const rest = data.projects.filter(p => !p.featured);
+  return /*#__PURE__*/React.createElement("section", {
+    id: "projects",
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 300,
-      fontSize: "2.6rem",
-      margin: "0 0 2.4rem 0",
-      color: "var(--ink)",
-      letterSpacing: "-0.015em"
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
     }
-  }, "curriculum vitae"), /*#__PURE__*/React.createElement("section", {
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: data.projects.length + " built"
+  }, "Projects"), featured.map((p, i) => /*#__PURE__*/React.createElement(ProjectCard, {
+    key: p.id,
+    p: p,
+    index: i
+  })), showAll && rest.map((p, i) => /*#__PURE__*/React.createElement(ProjectCard, {
+    key: p.id,
+    p: p,
+    index: featured.length + i
+  })), rest.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
-      marginBottom: "2.6rem"
+      marginTop: "1rem"
     }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "experience"), data.experience.map((e, i) => /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Pill, {
+    onClick: () => setShowAll(!showAll)
+  }, showAll ? "Show less" : "All " + data.projects.length + " projects")));
+}
+
+// ─── Experience ──────────────────────────────────────────────────────────────
+function Experience({
+  data
+}) {
+  return /*#__PURE__*/React.createElement("section", {
+    id: "experience",
+    style: {
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "Where the work happened"
+  }, "Experience"), data.experience.map((e, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
-    className: "sd-tl-row",
+    className: "sd-row",
     style: {
       display: "grid",
-      gridTemplateColumns: "150px 22px 1fr",
-      gap: "1rem",
-      padding: "1rem 0",
-      borderBottom: i === data.experience.length - 1 ? "none" : "1px solid var(--rule)"
+      gridTemplateColumns: "190px 1fr",
+      gap: "1.4rem",
+      padding: "1.4rem 0",
+      borderTop: "1px solid var(--line)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.78rem",
-      color: "var(--ink2)",
-      paddingTop: "0.2rem",
-      textAlign: "right"
+      fontFamily: FONT_MONO,
+      fontSize: "0.74rem",
+      color: "var(--muted)",
+      lineHeight: 1.6
     }
-  }, e.dates, /*#__PURE__*/React.createElement("div", {
+  }, e.dates, /*#__PURE__*/React.createElement("br", null), e.location), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
     style: {
-      marginTop: "0.3rem",
-      color: "var(--ink2)"
-    }
-  }, e.location)), /*#__PURE__*/React.createElement("div", {
-    "aria-hidden": "true",
-    style: {
-      position: "relative",
-      display: "flex",
-      justifyContent: "center"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      position: "absolute",
-      top: 0,
-      bottom: i === data.experience.length - 1 ? "calc(100% - 18px)" : "-1rem",
-      width: 1,
-      background: "var(--rule)"
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "sd-tl-dot",
-    style: {
-      position: "absolute",
-      top: 7,
-      width: 9,
-      height: 9,
-      borderRadius: "50%",
-      background: i === 0 ? "var(--accent)" : "var(--bg)",
-      border: "1.5px solid var(--accent)",
-      boxSizing: "border-box"
-    }
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.05rem",
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 700,
+      fontSize: "1.1rem",
+      textTransform: "uppercase",
+      letterSpacing: "-0.01em",
+      margin: 0,
       color: "var(--ink)"
     }
   }, e.role), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.92rem",
-      color: "var(--ink2)",
-      marginTop: "0.1rem",
-      marginBottom: "0.6rem"
+      fontSize: "0.93rem",
+      color: "var(--accent)",
+      margin: "0.15rem 0 0.7rem"
     }
   }, e.org), /*#__PURE__*/React.createElement("ul", {
     style: {
@@ -1449,12 +753,12 @@ function CVPage({
   }, e.bullets.map((b, j) => /*#__PURE__*/React.createElement("li", {
     key: j,
     style: {
-      fontSize: "0.92rem",
+      fontSize: "0.93rem",
       lineHeight: 1.6,
-      color: "var(--ink)",
-      paddingLeft: "1.1rem",
+      color: "var(--ink-2)",
+      paddingLeft: "1rem",
       position: "relative",
-      marginBottom: "0.35rem"
+      marginBottom: "0.4rem"
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
@@ -1462,381 +766,266 @@ function CVPage({
       left: 0,
       color: "var(--accent)"
     }
-  }, "\u25B8"), b))))))), /*#__PURE__*/React.createElement("section", {
+  }, "\u25B8"), b)))))));
+}
+
+// ─── Education + skills ──────────────────────────────────────────────────────
+function Credentials({
+  data
+}) {
+  return /*#__PURE__*/React.createElement("section", {
+    id: "credentials",
     style: {
-      marginBottom: "2.6rem"
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
     }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "education"), data.education.map((e, i) => /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "Training"
+  }, "Education"), data.education.map((e, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
+    className: "sd-row",
     style: {
       display: "grid",
-      gridTemplateColumns: "180px 1fr",
-      gap: "1.2rem",
-      padding: "0.9rem 0",
-      borderBottom: i === data.education.length - 1 ? "none" : "1px solid var(--rule)"
+      gridTemplateColumns: "190px 1fr",
+      gap: "1.4rem",
+      padding: "1.1rem 0",
+      borderTop: "1px solid var(--line)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.78rem",
-      color: "var(--ink2)",
-      paddingTop: "0.2rem"
+      fontFamily: FONT_MONO,
+      fontSize: "0.74rem",
+      color: "var(--muted)"
     }
   }, e.dates), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 700,
       fontSize: "1.02rem",
+      textTransform: "uppercase",
       color: "var(--ink)"
     }
   }, e.degree), e.concentration && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: "0.88rem",
-      color: "var(--ink2)",
+      color: "var(--ink-2)",
       marginTop: "0.1rem"
     }
   }, "Concentration: ", e.concentration), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.92rem",
-      color: "var(--ink2)",
+      fontSize: "0.9rem",
+      color: "var(--ink-2)",
       marginTop: "0.1rem"
     }
-  }, e.school, e.detail ? ` · ${e.detail}` : ""), e.courses && /*#__PURE__*/React.createElement("div", {
+  }, e.school, e.detail ? " · " + e.detail : "")))), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.85rem",
-      color: "var(--ink2)",
-      marginTop: "0.4rem",
-      fontStyle: "italic"
+      marginTop: "2.6rem"
     }
-  }, "Coursework: ", e.courses))))), data.publications && data.publications.length > 0 && /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "2.6rem"
-    }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "publications"), data.publications.map((pub, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      display: "grid",
-      gridTemplateColumns: "180px 1fr",
-      gap: "1.2rem",
-      padding: "0.9rem 0",
-      borderBottom: i === data.publications.length - 1 ? "none" : "1px solid var(--rule)"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.78rem",
-      color: "var(--ink2)",
-      paddingTop: "0.2rem"
-    }
-  }, pub.year, /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: "0.3rem",
-      color: "var(--accent)"
-    }
-  }, pub.status)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1.02rem",
-      color: "var(--ink)",
-      lineHeight: 1.35
-    }
-  }, pub.link ? /*#__PURE__*/React.createElement("a", {
-    href: pub.link,
-    target: "_blank",
-    rel: "noopener noreferrer",
-    style: {
-      borderBottom: "1px solid var(--rule)"
-    }
-  }, pub.title) : pub.title), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "0.9rem",
-      color: "var(--ink2)",
-      marginTop: "0.25rem"
-    }
-  }, pub.authors), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "0.9rem",
-      color: "var(--ink2)",
-      marginTop: "0.1rem",
-      fontStyle: "italic"
-    }
-  }, pub.venue), pub.note && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "0.85rem",
-      color: "var(--ink2)",
-      marginTop: "0.3rem"
-    }
-  }, pub.note))))), /*#__PURE__*/React.createElement("section", {
-    style: {
-      marginBottom: "2rem"
-    }
-  }, /*#__PURE__*/React.createElement(SectionHeader, null, "technical skills"), data.skills.map((s, i) => /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "Tools"
+  }, "Skills"), data.skills.map(s => /*#__PURE__*/React.createElement("div", {
     key: s.group,
-    className: "sd-skill-row",
+    className: "sd-row",
     style: {
       display: "grid",
-      gridTemplateColumns: "220px 1fr",
-      gap: "1.2rem",
-      padding: "0.8rem 0",
-      borderBottom: i === data.skills.length - 1 ? "none" : "1px solid var(--rule)",
+      gridTemplateColumns: "190px 1fr",
+      gap: "1.4rem",
+      padding: "0.9rem 0",
+      borderTop: "1px solid var(--line)",
       alignItems: "baseline"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "0.98rem",
-      color: "var(--ink)"
+      fontFamily: FONT_MONO,
+      fontSize: "0.7rem",
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      color: "var(--muted)"
     }
   }, s.group), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
-      gap: "0.4rem 0.5rem"
+      gap: "0.35rem"
     }
-  }, s.items.map(it => /*#__PURE__*/React.createElement("span", {
-    key: it,
-    style: {
-      fontFamily: FONT_HEAD.mono,
-      fontSize: "0.78rem",
-      padding: "0.2rem 0.55rem",
-      background: "var(--chip)",
-      border: "1px solid var(--rule)",
-      borderRadius: 4,
-      color: "var(--ink)"
-    }
+  }, s.items.map(it => /*#__PURE__*/React.createElement(Chip, {
+    key: it
   }, it)))))));
 }
 
-// ─── Icons ───────────────────────────────────────────────────────────────────
-function SocialIcon({
-  kind,
-  href
-}) {
-  const paths = {
-    email: /*#__PURE__*/React.createElement("path", {
-      d: "M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm0 2v.3l8 5 8-5V7H4zm16 2.3l-8 5-8-5V18h16V9.3z"
-    }),
-    github: /*#__PURE__*/React.createElement("path", {
-      d: "M12 2C6.48 2 2 6.58 2 12.26c0 4.54 2.87 8.39 6.84 9.75.5.09.68-.22.68-.48v-1.68c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.57 2.34 1.12 2.91.85.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.72 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.84a9.38 9.38 0 0 1 2.5.34c1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9v2.82c0 .27.18.58.69.48A10.02 10.02 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"
-    }),
-    linkedin: /*#__PURE__*/React.createElement("path", {
-      d: "M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.47v6.27zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.56V9h3.56v11.45z"
-    }),
-    scholar: /*#__PURE__*/React.createElement("path", {
-      d: "M12 2L1 9l4 2.5V17l7 4 7-4v-5.5l2-1.25V16h2V9L12 2zm0 2.2L18.8 9 12 13.1 5.2 9 12 4.2zM7 13.2l5 3.05 5-3.05v2.5l-5 2.85-5-2.85v-2.5z"
-    })
-  };
-  return /*#__PURE__*/React.createElement("a", {
-    href: href,
-    style: {
-      color: "var(--ink2)",
-      display: "inline-flex"
-    },
-    onMouseEnter: e => e.currentTarget.style.color = "var(--accent)",
-    onMouseLeave: e => e.currentTarget.style.color = "var(--ink2)"
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "20",
-    height: "20",
-    viewBox: "0 0 24 24",
-    fill: "currentColor"
-  }, paths[kind]));
-}
-
-// ─── Top nav ─────────────────────────────────────────────────────────────────
-function TopNav({
-  page,
-  setPage,
+// ─── Nav + footer ────────────────────────────────────────────────────────────
+const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"]];
+function Nav({
   name,
-  dark,
-  setDark
+  theme,
+  toggle
 }) {
-  const items = [{
-    id: "about",
-    label: "about"
-  }, {
-    id: "projects",
-    label: "projects"
-  }, {
-    id: "cv",
-    label: "cv"
-  }];
-  // "project-detail" is treated as still being on the projects tab
-  const activeTab = page === "project-detail" ? "projects" : page;
   return /*#__PURE__*/React.createElement("nav", {
     style: {
       position: "sticky",
       top: 0,
-      zIndex: 10,
-      background: "var(--surface)",
-      borderBottom: "1px solid var(--rule)",
-      padding: "0.8rem 1.2rem",
+      zIndex: 20,
+      background: "var(--bg)",
+      borderBottom: "1px solid var(--line)",
+      padding: "0.75rem 0",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      backdropFilter: "saturate(1.3) blur(6px)"
+      gap: "1rem"
     }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setPage("about"),
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "#top",
     style: {
-      background: "none",
-      border: "none",
-      fontFamily: "var(--font-head)",
-      fontWeight: 500,
-      fontSize: "1rem",
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: "0.86rem",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
       color: "var(--ink)",
-      cursor: "pointer",
-      padding: 0,
-      letterSpacing: "-0.01em"
+      textDecoration: "none"
     }
   }, name), /*#__PURE__*/React.createElement("div", {
+    className: "sd-nav-links",
     style: {
       display: "flex",
-      gap: "0.3rem",
-      alignItems: "center"
+      alignItems: "center",
+      gap: "0.2rem"
     }
-  }, items.map(it => {
-    const active = activeTab === it.id;
-    return /*#__PURE__*/React.createElement("button", {
-      key: it.id,
-      onClick: () => setPage(it.id),
-      style: {
-        background: active ? "var(--chip)" : "none",
-        border: "none",
-        padding: "0.45rem 0.8rem",
-        borderRadius: 6,
-        fontSize: "0.92rem",
-        color: active ? "var(--accent)" : "var(--ink)",
-        fontWeight: active ? 500 : 400,
-        cursor: "pointer",
-        fontFamily: FONT_BODY
-      }
-    }, it.label, active && page !== "project-detail" && /*#__PURE__*/React.createElement("span", {
-      style: {
-        color: "var(--accent)",
-        marginLeft: 2
-      }
-    }, " (current)"));
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setDark(d => !d),
-    title: "toggle theme",
+  }, NAV_ITEMS.map(it => /*#__PURE__*/React.createElement("a", {
+    key: it[0],
+    href: "#" + it[0],
     style: {
-      background: "none",
-      border: "1px solid var(--rule)",
-      padding: "0.35rem 0.5rem",
-      borderRadius: 6,
-      cursor: "pointer",
-      marginLeft: "0.5rem",
-      color: "var(--ink)",
-      fontSize: "0.9rem"
+      fontFamily: FONT_MONO,
+      fontSize: "0.68rem",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+      color: "var(--ink-2)",
+      textDecoration: "none",
+      padding: "0.4rem 0.55rem",
+      borderRadius: 999
     }
-  }, dark ? "☀" : "☾")));
+  }, it[1])), /*#__PURE__*/React.createElement("button", {
+    onClick: toggle,
+    title: "Toggle theme",
+    "aria-label": "Toggle colour theme",
+    style: {
+      background: "transparent",
+      border: "1px solid var(--line)",
+      borderRadius: 999,
+      padding: "0.35rem 0.6rem",
+      cursor: "pointer",
+      color: "var(--ink)",
+      fontSize: "0.8rem",
+      marginLeft: "0.35rem"
+    }
+  }, theme === "dark" ? "☀" : "☾")));
+}
+function Footer({
+  data
+}) {
+  return /*#__PURE__*/React.createElement("footer", {
+    style: {
+      marginTop: "clamp(3rem, 9vh, 6rem)",
+      borderTop: "1px solid var(--line)",
+      paddingTop: "2rem",
+      paddingBottom: "3rem"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "1.6rem",
+      justifyContent: "space-between"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_DISPLAY,
+      fontWeight: 800,
+      fontSize: "0.86rem",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase",
+      color: "var(--ink)"
+    }
+  }, data.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "0.88rem",
+      color: "var(--ink-2)",
+      marginTop: "0.5rem",
+      maxWidth: "42ch"
+    }
+  }, data.affiliation.role, " at ", data.affiliation.lab, ", ", data.affiliation.org, "."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.74rem",
+      color: "var(--muted)",
+      marginTop: "0.6rem"
+    }
+  }, data.location, " \xB7 ", data.email)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: "0.5rem",
+      alignItems: "flex-start",
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.github,
+    small: true
+  }, "GitHub"), /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.linkedin,
+    small: true
+  }, "LinkedIn"), /*#__PURE__*/React.createElement(Pill, {
+    href: "mailto:" + data.email,
+    small: true
+  }, "Email"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.68rem",
+      color: "var(--muted)",
+      marginTop: "2rem"
+    }
+  }, "\xA9 2026 ", data.name, ". Built and maintained by hand."));
 }
 
 // ─── Root ────────────────────────────────────────────────────────────────────
-function Portfolio({
-  variant = "warm",
-  accent,
-  fontHead,
-  density = "comfortable",
-  initialPage = "about"
-}) {
-  const v = VARIANTS[variant];
-  const [page, setPage] = useState(initialPage);
-  const [detailId, setDetailId] = useState(null);
-  const [dark, setDark] = useState(false);
-  const effAccent = accent || v.accent;
-  const effFontHead = FONT_HEAD[fontHead || v.fontHead];
-  const pad = density === "compact" ? "1.4rem 1.4rem" : density === "airy" ? "3.2rem 3.2rem" : "2.2rem 2.4rem";
-  const themeVars = dark ? {
-    "--bg": "#0e1014",
-    "--surface": "#14181f",
-    "--ink": "#e8e6e3",
-    "--ink2": "#8d8a85",
-    "--rule": "#262b34",
-    "--chip": "#1b2029",
-    "--accent": effAccent,
-    "--font-head": effFontHead
-  } : {
-    "--bg": v.bg,
-    "--surface": v.surface,
-    "--ink": v.ink,
-    "--ink2": v.ink2,
-    "--rule": v.rule,
-    "--chip": "rgba(0,0,0,0.04)",
-    "--accent": effAccent,
-    "--font-head": effFontHead
-  };
-  const wrap = {
-    background: "var(--bg)",
-    color: "var(--ink)",
-    fontFamily: FONT_BODY,
-    minHeight: "100%",
-    width: "100%",
-    ...themeVars,
-    display: "flex",
-    flexDirection: "column"
-  };
-  const openProject = id => {
-    setDetailId(id);
-    setPage("project-detail");
-  };
-  const backToProjects = () => {
-    setDetailId(null);
-    setPage("projects");
-  };
+function Portfolio() {
+  const data = window.PORTFOLIO_DATA;
+  const themeState = useTheme();
+  const theme = themeState[0],
+    toggle = themeState[1];
   return /*#__PURE__*/React.createElement("div", {
-    style: wrap
-  }, /*#__PURE__*/React.createElement(TopNav, {
-    page: page,
-    setPage: p => {
-      setDetailId(null);
-      setPage(p);
-    },
-    name: PORTFOLIO_DATA.shortName + " Duong",
-    dark: dark,
-    setDark: setDark
-  }), /*#__PURE__*/React.createElement("main", {
+    id: "top",
     style: {
-      flex: 1,
-      width: "100%",
-      maxWidth: 880,
+      background: "var(--bg)",
+      color: "var(--ink)",
+      fontFamily: FONT_BODY,
+      minHeight: "100%",
+      width: "100%"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      maxWidth: 1080,
       margin: "0 auto",
-      padding: pad,
-      boxSizing: "border-box"
+      padding: "0 clamp(1rem, 4vw, 2.5rem)"
     }
-  }, page === "about" && /*#__PURE__*/React.createElement(AboutPage, {
-    data: PORTFOLIO_DATA,
-    variant: variant,
-    onOpenProject: openProject,
-    dark: dark
-  }), page === "projects" && /*#__PURE__*/React.createElement(ProjectsPage, {
-    data: PORTFOLIO_DATA,
-    onOpenProject: openProject
-  }), page === "project-detail" && /*#__PURE__*/React.createElement(ProjectDetailPage, {
-    data: PORTFOLIO_DATA,
-    projectId: detailId,
-    onBack: backToProjects
-  }), page === "cv" && /*#__PURE__*/React.createElement(CVPage, {
-    data: PORTFOLIO_DATA
-  })), /*#__PURE__*/React.createElement("footer", {
-    style: {
-      borderTop: "1px solid var(--rule)",
-      padding: "1.2rem 1.5rem",
-      fontSize: "0.82rem",
-      color: "var(--ink2)",
-      textAlign: "center",
-      background: "var(--surface)"
-    }
-  }, "\xA9 2026 ", PORTFOLIO_DATA.name, ". Styled after ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "var(--accent)"
-    }
-  }, "al-folio"), ". Last updated: September 2026."));
+  }, /*#__PURE__*/React.createElement(Nav, {
+    name: data.shortName + " Duong",
+    theme: theme,
+    toggle: toggle
+  }), /*#__PURE__*/React.createElement(Hero, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Research, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Projects, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Experience, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Credentials, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Footer, {
+    data: data
+  })));
 }
 Object.assign(window, {
   Portfolio,
-  VARIANTS,
-  FONT_HEAD
+  THEMES,
+  RAMP
 });
