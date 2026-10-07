@@ -57,6 +57,16 @@ const THEMES = {
 const RAMP = ["#f0631f", "#2a9d8f", "#4a8fe7", "#c77dff", "#e9b949", "#5ec28a"];
 
 const FONT_DISPLAY = '"Archivo", Impact, "Arial Narrow", sans-serif';
+// Condensed + heavy is what gives the display type its weight. Archivo's wdth
+// axis supplies it from the same family the body never uses.
+const DISPLAY = { fontFamily: FONT_DISPLAY, fontStretch: "75%", fontWeight: 800 };
+// Chrome fill: the polish on the reference's headings. Falls back to solid --ink
+// wherever background-clip:text is unsupported.
+const CHROME = {
+  background: "linear-gradient(172deg, var(--ink) 14%, var(--ink-2) 62%, var(--muted) 100%)",
+  WebkitBackgroundClip: "text", backgroundClip: "text",
+  WebkitTextFillColor: "transparent", color: "var(--ink)",
+};
 const FONT_BODY = '"Source Sans 3", -apple-system, system-ui, sans-serif';
 const FONT_MONO = '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
@@ -98,7 +108,8 @@ function Pill({ href, children, filled, onClick, small }) {
     transition: "background 220ms ease, border-color 220ms ease, transform 220ms ease",
   };
   const style = filled
-    ? { ...base, background: "var(--accent)", color: "#fff", border: "1px solid var(--accent)" }
+    ? { ...base, background: "var(--accent)", color: "#fff", border: "1px solid var(--accent)",
+        boxShadow: "0 0 0 1px var(--accent), 0 6px 26px -6px var(--accent)" }
     : { ...base, background: "transparent", color: "var(--ink)", border: "1px solid var(--line)" };
   if (href) {
     const ext = href.indexOf("http") === 0;
@@ -131,16 +142,27 @@ function Eyebrow({ children, color }) {
   );
 }
 
-function SectionTitle({ children, kicker }) {
+function SectionTitle({ children, kicker, intro }) {
   return (
-    <div style={{ marginBottom: "2.2rem" }}>
-      {kicker && <div style={{ marginBottom: "0.7rem" }}><Eyebrow>{kicker}</Eyebrow></div>}
-      <h2 style={{
-        fontFamily: FONT_DISPLAY, fontWeight: 800,
-        fontSize: "clamp(2rem, 5.2vw, 3.6rem)", lineHeight: 0.98,
-        letterSpacing: "-0.03em", textTransform: "uppercase",
-        margin: 0, color: "var(--ink)",
-      }}>{children}</h2>
+    <div className="sd-sechead" style={{
+      marginBottom: "2.2rem", display: "grid",
+      gridTemplateColumns: intro ? "auto 1fr" : "1fr",
+      gap: "2.2rem", alignItems: "end",
+    }}>
+      <div>
+        {kicker && <div style={{ marginBottom: "0.7rem" }}><Eyebrow>{kicker}</Eyebrow></div>}
+        <h2 style={{
+          ...DISPLAY, fontWeight: 900,
+          fontSize: "clamp(2rem, 5.6vw, 4rem)", lineHeight: 0.94,
+          letterSpacing: "-0.035em", textTransform: "uppercase",
+          margin: 0, ...CHROME,
+        }}>{children}</h2>
+      </div>
+      {intro && (
+        <p style={{ fontSize: "1rem", lineHeight: 1.6, color: "var(--ink-2)", margin: 0, maxWidth: "46ch", paddingBottom: "0.4rem" }}>
+          {intro}
+        </p>
+      )}
     </div>
   );
 }
@@ -176,10 +198,10 @@ function Hero({ data }) {
           <Eyebrow>{data.tagline}</Eyebrow>
         </div>
         <h1 className="sd-hero-line" style={{
-          fontFamily: FONT_DISPLAY, fontWeight: 900,
-          fontSize: "clamp(2.6rem, 10.5vw, 8.5rem)", lineHeight: 0.88,
-          letterSpacing: "-0.045em", textTransform: "uppercase",
-          margin: "0 0 1.6rem 0", color: "var(--ink)",
+          ...DISPLAY, fontWeight: 900,
+          fontSize: "clamp(2.8rem, 11vw, 9rem)", lineHeight: 0.86,
+          letterSpacing: "-0.05em", textTransform: "uppercase",
+          margin: "0 0 1.6rem 0", ...CHROME,
         }}>
           Explainable<br />geospatial AI.
         </h1>
@@ -210,7 +232,7 @@ const METHODS = [
 function Research({ data }) {
   return (
     <section id="research" style={{ paddingTop: "clamp(3rem, 8vh, 5.5rem)" }}>
-      <SectionTitle kicker="Peer-reviewed and in progress">Research</SectionTitle>
+      <SectionTitle kicker="Peer-reviewed and in progress" intro="Papers, methods and the question underneath them. Artifacts are public where the venue allows.">Research</SectionTitle>
 
       <p style={{ fontSize: "1.06rem", lineHeight: 1.6, color: "var(--ink)", maxWidth: "62ch", margin: "0 0 1.6rem 0" }}>
         I study how regulatory thresholds and infrastructure rules reshape what gets built,
@@ -320,6 +342,10 @@ function PreviewPanel({ p, accent }) {
 function ProjectCard({ p, index }) {
   const accent = RAMP[index % RAMP.length];
   const href = p.live || p.github || null;
+  const support = [];
+  (p.sections || []).forEach((sec) => {
+    (sec.list || []).forEach((l) => { if (support.length < 3) support.push(l); });
+  });
   return (
     <article className="sd-card" style={{
       border: "1px solid var(--line)", borderRadius: 22, padding: "clamp(1.1rem, 2.6vw, 1.9rem)",
@@ -327,14 +353,14 @@ function ProjectCard({ p, index }) {
     }}>
       <div className="sd-card-head" style={{ display: "flex", alignItems: "flex-start", gap: "1.1rem", marginBottom: "1.3rem" }}>
         <div style={{
-          fontFamily: FONT_DISPLAY, fontWeight: 900, fontSize: "clamp(2.2rem, 5vw, 3.4rem)",
-          lineHeight: 0.85, letterSpacing: "-0.04em", color: "var(--ink)", flex: "none",
+          ...DISPLAY, fontWeight: 900, fontSize: "clamp(2.4rem, 5.6vw, 3.8rem)",
+          lineHeight: 0.82, letterSpacing: "-0.045em", flex: "none", ...CHROME,
         }}>{String(index + 1).length < 2 ? "0" + (index + 1) : String(index + 1)}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <Eyebrow color="var(--muted)">{p.category}</Eyebrow>
           <h3 style={{
-            fontFamily: FONT_DISPLAY, fontWeight: 800, fontSize: "clamp(1.15rem, 3vw, 1.85rem)",
-            lineHeight: 1.02, letterSpacing: "-0.02em", textTransform: "uppercase",
+            ...DISPLAY, fontWeight: 900, fontSize: "clamp(1.2rem, 3.2vw, 2rem)",
+            lineHeight: 1.0, letterSpacing: "-0.025em", textTransform: "uppercase",
             margin: "0.3rem 0 0", color: "var(--ink)",
           }}>{p.title}</h3>
         </div>
@@ -343,9 +369,19 @@ function ProjectCard({ p, index }) {
 
       <div className="sd-card-body" style={{ display: "grid", gridTemplateColumns: "0.85fr 1fr", gap: "1.1rem" }}>
         <PreviewPanel p={p} accent={accent} />
-        <div>
-          <p style={{ fontSize: "0.97rem", lineHeight: 1.6, color: "var(--ink)", margin: "0 0 0.9rem 0" }}>{p.summary}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <p style={{ fontSize: "1.02rem", lineHeight: 1.55, color: "var(--ink)", margin: "0 0 0.9rem 0" }}>{p.summary}</p>
+          {support.length > 0 && (
+            <div style={{ marginBottom: "0.9rem" }}>
+              {support.map((line, i) => (
+                <p key={i} style={{
+                  fontSize: "0.87rem", lineHeight: 1.55, color: "var(--ink-2)",
+                  margin: 0, padding: "0.6rem 0", borderTop: "1px solid var(--line-2)",
+                }}>{line}</p>
+              ))}
+            </div>
+          )}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: "auto" }}>
             {(p.tags || []).map((t) => <Chip key={t}>{t}</Chip>)}
           </div>
         </div>
@@ -360,7 +396,7 @@ function Projects({ data }) {
   const rest = data.projects.filter((p) => !p.featured);
   return (
     <section id="projects" style={{ paddingTop: "clamp(3rem, 8vh, 5.5rem)" }}>
-      <SectionTitle kicker={data.projects.length + " built"}>Projects</SectionTitle>
+      <SectionTitle kicker="Selected work" intro="Systems I built or lead: agentic GeoAI, civic evidence platforms, spatial pipelines and on-device models.">Projects</SectionTitle>
       {featured.map((p, i) => <ProjectCard key={p.id} p={p} index={i} />)}
       {showAll && rest.map((p, i) => <ProjectCard key={p.id} p={p} index={featured.length + i} />)}
       {rest.length > 0 && (
@@ -378,7 +414,7 @@ function Projects({ data }) {
 function Experience({ data }) {
   return (
     <section id="experience" style={{ paddingTop: "clamp(3rem, 8vh, 5.5rem)" }}>
-      <SectionTitle kicker="Where the work happened">Experience</SectionTitle>
+      <SectionTitle kicker="Where the work happened" intro="Founding engineering, university research and the industry roles underneath them.">Experience</SectionTitle>
       {data.experience.map((e, i) => (
         <div key={i} className="sd-row" style={{
           display: "grid", gridTemplateColumns: "190px 1fr", gap: "1.4rem",
@@ -441,8 +477,41 @@ function Credentials({ data }) {
   );
 }
 
+// ─── Resume ──────────────────────────────────────────────────────────────────
+function Resume({ data }) {
+  return (
+    <section id="resume" style={{ paddingTop: "clamp(3rem, 8vh, 5.5rem)" }}>
+      <SectionTitle kicker="One page" intro="The short version, kept current. Open it, download it, or go straight to the source.">Resume</SectionTitle>
+      <div className="sd-resume" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.6rem", alignItems: "start" }}>
+        <a href="assets/Sam_Duong_Resume.pdf" target="_blank" rel="noopener noreferrer"
+           style={{ display: "block", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", background: "var(--plate)" }}>
+          <img src="assets/resume-preview.webp" alt="First page of Sam Duong's resume"
+               style={{ width: "100%", height: "auto", display: "block" }} />
+        </a>
+        <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", marginBottom: "1.6rem" }}>
+            <Pill href="assets/Sam_Duong_Resume.pdf" filled>Download resume ↗</Pill>
+            <Pill href="assets/Sam_Duong_Resume.pdf">Open in new tab</Pill>
+          </div>
+          <div style={{ fontFamily: FONT_MONO, fontSize: "0.68rem", letterSpacing: "0.14em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.8rem" }}>Elsewhere</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+            <Pill href={data.links.github} small>GitHub</Pill>
+            <Pill href={data.links.linkedin} small>LinkedIn</Pill>
+            <Pill href={"mailto:" + data.email} small>{data.email}</Pill>
+            {data.links.scholar && <Pill href={data.links.scholar} small>Scholar</Pill>}
+          </div>
+          <p style={{ fontSize: "0.9rem", lineHeight: 1.6, color: "var(--muted)", marginTop: "1.6rem", maxWidth: "40ch" }}>
+            Based in {data.location}. Open to research collaborations and engineering work on
+            infrastructure, housing and energy systems.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Nav + footer ────────────────────────────────────────────────────────────
-const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"]];
+const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"], ["resume", "Resume"]];
 
 function Nav({ name, theme, toggle }) {
   return (
@@ -483,10 +552,14 @@ function Footer({ data }) {
           </div>
           <div style={{ fontFamily: FONT_MONO, fontSize: "0.74rem", color: "var(--muted)", marginTop: "0.6rem" }}>{data.location} · {data.email}</div>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <Pill href={data.links.github} small>GitHub</Pill>
-          <Pill href={data.links.linkedin} small>LinkedIn</Pill>
-          <Pill href={"mailto:" + data.email} small>Email</Pill>
+        <div>
+          <div style={{ fontFamily: FONT_MONO, fontSize: "0.66rem", letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--muted)", marginBottom: "0.9rem" }}>Elsewhere</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <a href={data.links.github} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9rem", color: "var(--ink-2)", textDecoration: "none" }}>GitHub ↗</a>
+            <a href={data.links.linkedin} target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9rem", color: "var(--ink-2)", textDecoration: "none" }}>LinkedIn ↗</a>
+            <a href="assets/Sam_Duong_Resume.pdf" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9rem", color: "var(--ink-2)", textDecoration: "none" }}>Resume ↗</a>
+            <a href={"mailto:" + data.email} style={{ fontSize: "0.9rem", color: "var(--ink-2)", textDecoration: "none" }}>Email ↗</a>
+          </div>
         </div>
       </div>
       <div style={{ fontFamily: FONT_MONO, fontSize: "0.68rem", color: "var(--muted)", marginTop: "2rem" }}>
@@ -513,6 +586,7 @@ function Portfolio() {
         <Projects data={data} />
         <Experience data={data} />
         <Credentials data={data} />
+        <Resume data={data} />
         <Footer data={data} />
       </div>
     </div>

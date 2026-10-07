@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75,500;75,700;75,800;75,900;100,500;100,700;100,800;100,900&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <style>
@@ -96,6 +96,11 @@
         .sd-card { transition: border-color 260ms ease; }
         .sd-card:hover { border-color: var(--muted); }
         .sd-nav-links a:hover { color: var(--ink) !important; background: var(--line-2); }
+      }
+    
+      @media (max-width: 860px) {
+        .sd-sechead { grid-template-columns: 1fr !important; gap: 1rem !important; align-items: start !important; }
+        .sd-resume  { grid-template-columns: 1fr !important; }
       }
     </style>
       <script>

@@ -60,6 +60,22 @@ const THEMES = {
 // the top hairline, the metric fills and the flow badges.
 const RAMP = ["#f0631f", "#2a9d8f", "#4a8fe7", "#c77dff", "#e9b949", "#5ec28a"];
 const FONT_DISPLAY = '"Archivo", Impact, "Arial Narrow", sans-serif';
+// Condensed + heavy is what gives the display type its weight. Archivo's wdth
+// axis supplies it from the same family the body never uses.
+const DISPLAY = {
+  fontFamily: FONT_DISPLAY,
+  fontStretch: "75%",
+  fontWeight: 800
+};
+// Chrome fill: the polish on the reference's headings. Falls back to solid --ink
+// wherever background-clip:text is unsupported.
+const CHROME = {
+  background: "linear-gradient(172deg, var(--ink) 14%, var(--ink-2) 62%, var(--muted) 100%)",
+  WebkitBackgroundClip: "text",
+  backgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  color: "var(--ink)"
+};
 const FONT_BODY = '"Source Sans 3", -apple-system, system-ui, sans-serif';
 const FONT_MONO = '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
 
@@ -117,7 +133,8 @@ function Pill({
     ...base,
     background: "var(--accent)",
     color: "#fff",
-    border: "1px solid var(--accent)"
+    border: "1px solid var(--accent)",
+    boxShadow: "0 0 0 1px var(--accent), 0 6px 26px -6px var(--accent)"
   } : {
     ...base,
     background: "transparent",
@@ -174,28 +191,43 @@ function Eyebrow({
 }
 function SectionTitle({
   children,
-  kicker
+  kicker,
+  intro
 }) {
   return /*#__PURE__*/React.createElement("div", {
+    className: "sd-sechead",
     style: {
-      marginBottom: "2.2rem"
+      marginBottom: "2.2rem",
+      display: "grid",
+      gridTemplateColumns: intro ? "auto 1fr" : "1fr",
+      gap: "2.2rem",
+      alignItems: "end"
     }
-  }, kicker && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", null, kicker && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: "0.7rem"
     }
   }, /*#__PURE__*/React.createElement(Eyebrow, null, kicker)), /*#__PURE__*/React.createElement("h2", {
     style: {
-      fontFamily: FONT_DISPLAY,
-      fontWeight: 800,
-      fontSize: "clamp(2rem, 5.2vw, 3.6rem)",
-      lineHeight: 0.98,
-      letterSpacing: "-0.03em",
+      ...DISPLAY,
+      fontWeight: 900,
+      fontSize: "clamp(2rem, 5.6vw, 4rem)",
+      lineHeight: 0.94,
+      letterSpacing: "-0.035em",
       textTransform: "uppercase",
       margin: 0,
-      color: "var(--ink)"
+      ...CHROME
     }
-  }, children));
+  }, children)), intro && /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "1rem",
+      lineHeight: 1.6,
+      color: "var(--ink-2)",
+      margin: 0,
+      maxWidth: "46ch",
+      paddingBottom: "0.4rem"
+    }
+  }, intro));
 }
 
 // Low-opacity survey marks in the negative space. Decorative only.
@@ -267,14 +299,14 @@ function Hero({
   }, /*#__PURE__*/React.createElement(Eyebrow, null, data.tagline)), /*#__PURE__*/React.createElement("h1", {
     className: "sd-hero-line",
     style: {
-      fontFamily: FONT_DISPLAY,
+      ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(2.6rem, 10.5vw, 8.5rem)",
-      lineHeight: 0.88,
-      letterSpacing: "-0.045em",
+      fontSize: "clamp(2.8rem, 11vw, 9rem)",
+      lineHeight: 0.86,
+      letterSpacing: "-0.05em",
       textTransform: "uppercase",
       margin: "0 0 1.6rem 0",
-      color: "var(--ink)"
+      ...CHROME
     }
   }, "Explainable", /*#__PURE__*/React.createElement("br", null), "geospatial AI."), /*#__PURE__*/React.createElement("p", {
     className: "sd-hero-sub",
@@ -316,7 +348,8 @@ function Research({
       paddingTop: "clamp(3rem, 8vh, 5.5rem)"
     }
   }, /*#__PURE__*/React.createElement(SectionTitle, {
-    kicker: "Peer-reviewed and in progress"
+    kicker: "Peer-reviewed and in progress",
+    intro: "Papers, methods and the question underneath them. Artifacts are public where the venue allows."
   }, "Research"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: "1.06rem",
@@ -591,6 +624,12 @@ function ProjectCard({
 }) {
   const accent = RAMP[index % RAMP.length];
   const href = p.live || p.github || null;
+  const support = [];
+  (p.sections || []).forEach(sec => {
+    (sec.list || []).forEach(l => {
+      if (support.length < 3) support.push(l);
+    });
+  });
   return /*#__PURE__*/React.createElement("article", {
     className: "sd-card",
     style: {
@@ -610,13 +649,13 @@ function ProjectCard({
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontFamily: FONT_DISPLAY,
+      ...DISPLAY,
       fontWeight: 900,
-      fontSize: "clamp(2.2rem, 5vw, 3.4rem)",
-      lineHeight: 0.85,
-      letterSpacing: "-0.04em",
-      color: "var(--ink)",
-      flex: "none"
+      fontSize: "clamp(2.4rem, 5.6vw, 3.8rem)",
+      lineHeight: 0.82,
+      letterSpacing: "-0.045em",
+      flex: "none",
+      ...CHROME
     }
   }, String(index + 1).length < 2 ? "0" + (index + 1) : String(index + 1)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -627,11 +666,11 @@ function ProjectCard({
     color: "var(--muted)"
   }, p.category), /*#__PURE__*/React.createElement("h3", {
     style: {
-      fontFamily: FONT_DISPLAY,
-      fontWeight: 800,
-      fontSize: "clamp(1.15rem, 3vw, 1.85rem)",
-      lineHeight: 1.02,
-      letterSpacing: "-0.02em",
+      ...DISPLAY,
+      fontWeight: 900,
+      fontSize: "clamp(1.2rem, 3.2vw, 2rem)",
+      lineHeight: 1.0,
+      letterSpacing: "-0.025em",
       textTransform: "uppercase",
       margin: "0.3rem 0 0",
       color: "var(--ink)"
@@ -653,18 +692,38 @@ function ProjectCard({
   }, /*#__PURE__*/React.createElement(PreviewPanel, {
     p: p,
     accent: accent
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }), /*#__PURE__*/React.createElement("div", {
     style: {
-      fontSize: "0.97rem",
-      lineHeight: 1.6,
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "1.02rem",
+      lineHeight: 1.55,
       color: "var(--ink)",
       margin: "0 0 0.9rem 0"
     }
-  }, p.summary), /*#__PURE__*/React.createElement("div", {
+  }, p.summary), support.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: "0.9rem"
+    }
+  }, support.map((line, i) => /*#__PURE__*/React.createElement("p", {
+    key: i,
+    style: {
+      fontSize: "0.87rem",
+      lineHeight: 1.55,
+      color: "var(--ink-2)",
+      margin: 0,
+      padding: "0.6rem 0",
+      borderTop: "1px solid var(--line-2)"
+    }
+  }, line))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
-      gap: "0.35rem"
+      gap: "0.35rem",
+      marginTop: "auto"
     }
   }, (p.tags || []).map(t => /*#__PURE__*/React.createElement(Chip, {
     key: t
@@ -682,7 +741,8 @@ function Projects({
       paddingTop: "clamp(3rem, 8vh, 5.5rem)"
     }
   }, /*#__PURE__*/React.createElement(SectionTitle, {
-    kicker: data.projects.length + " built"
+    kicker: "Selected work",
+    intro: "Systems I built or lead: agentic GeoAI, civic evidence platforms, spatial pipelines and on-device models."
   }, "Projects"), featured.map((p, i) => /*#__PURE__*/React.createElement(ProjectCard, {
     key: p.id,
     p: p,
@@ -710,7 +770,8 @@ function Experience({
       paddingTop: "clamp(3rem, 8vh, 5.5rem)"
     }
   }, /*#__PURE__*/React.createElement(SectionTitle, {
-    kicker: "Where the work happened"
+    kicker: "Where the work happened",
+    intro: "Founding engineering, university research and the industry roles underneath them."
   }, "Experience"), data.experience.map((e, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "sd-row",
@@ -852,8 +913,97 @@ function Credentials({
   }, it)))))));
 }
 
+// ─── Resume ──────────────────────────────────────────────────────────────────
+function Resume({
+  data
+}) {
+  return /*#__PURE__*/React.createElement("section", {
+    id: "resume",
+    style: {
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "One page",
+    intro: "The short version, kept current. Open it, download it, or go straight to the source."
+  }, "Resume"), /*#__PURE__*/React.createElement("div", {
+    className: "sd-resume",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "1.6rem",
+      alignItems: "start"
+    }
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "assets/Sam_Duong_Resume.pdf",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      display: "block",
+      border: "1px solid var(--line)",
+      borderRadius: 16,
+      overflow: "hidden",
+      background: "var(--plate)"
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "assets/resume-preview.webp",
+    alt: "First page of Sam Duong's resume",
+    style: {
+      width: "100%",
+      height: "auto",
+      display: "block"
+    }
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.6rem",
+      marginBottom: "1.6rem"
+    }
+  }, /*#__PURE__*/React.createElement(Pill, {
+    href: "assets/Sam_Duong_Resume.pdf",
+    filled: true
+  }, "Download resume \u2197"), /*#__PURE__*/React.createElement(Pill, {
+    href: "assets/Sam_Duong_Resume.pdf"
+  }, "Open in new tab")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.68rem",
+      letterSpacing: "0.14em",
+      textTransform: "uppercase",
+      color: "var(--muted)",
+      marginBottom: "0.8rem"
+    }
+  }, "Elsewhere"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.5rem"
+    }
+  }, /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.github,
+    small: true
+  }, "GitHub"), /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.linkedin,
+    small: true
+  }, "LinkedIn"), /*#__PURE__*/React.createElement(Pill, {
+    href: "mailto:" + data.email,
+    small: true
+  }, data.email), data.links.scholar && /*#__PURE__*/React.createElement(Pill, {
+    href: data.links.scholar,
+    small: true
+  }, "Scholar")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "0.9rem",
+      lineHeight: 1.6,
+      color: "var(--muted)",
+      marginTop: "1.6rem",
+      maxWidth: "40ch"
+    }
+  }, "Based in ", data.location, ". Open to research collaborations and engineering work on infrastructure, housing and energy systems."))));
+}
+
 // ─── Nav + footer ────────────────────────────────────────────────────────────
-const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"]];
+const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"], ["resume", "Resume"]];
 function Nav({
   name,
   theme,
@@ -959,23 +1109,56 @@ function Footer({
       color: "var(--muted)",
       marginTop: "0.6rem"
     }
-  }, data.location, " \xB7 ", data.email)), /*#__PURE__*/React.createElement("div", {
+  }, data.location, " \xB7 ", data.email)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.66rem",
+      letterSpacing: "0.16em",
+      textTransform: "uppercase",
+      color: "var(--muted)",
+      marginBottom: "0.9rem"
+    }
+  }, "Elsewhere"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
-      gap: "0.5rem",
-      alignItems: "flex-start",
-      flexWrap: "wrap"
+      flexDirection: "column",
+      gap: "0.5rem"
     }
-  }, /*#__PURE__*/React.createElement(Pill, {
+  }, /*#__PURE__*/React.createElement("a", {
     href: data.links.github,
-    small: true
-  }, "GitHub"), /*#__PURE__*/React.createElement(Pill, {
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      fontSize: "0.9rem",
+      color: "var(--ink-2)",
+      textDecoration: "none"
+    }
+  }, "GitHub \u2197"), /*#__PURE__*/React.createElement("a", {
     href: data.links.linkedin,
-    small: true
-  }, "LinkedIn"), /*#__PURE__*/React.createElement(Pill, {
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      fontSize: "0.9rem",
+      color: "var(--ink-2)",
+      textDecoration: "none"
+    }
+  }, "LinkedIn \u2197"), /*#__PURE__*/React.createElement("a", {
+    href: "assets/Sam_Duong_Resume.pdf",
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      fontSize: "0.9rem",
+      color: "var(--ink-2)",
+      textDecoration: "none"
+    }
+  }, "Resume \u2197"), /*#__PURE__*/React.createElement("a", {
     href: "mailto:" + data.email,
-    small: true
-  }, "Email"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: "0.9rem",
+      color: "var(--ink-2)",
+      textDecoration: "none"
+    }
+  }, "Email \u2197")))), /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: FONT_MONO,
       fontSize: "0.68rem",
@@ -1019,6 +1202,8 @@ function Portfolio() {
   }), /*#__PURE__*/React.createElement(Experience, {
     data: data
   }), /*#__PURE__*/React.createElement(Credentials, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Resume, {
     data: data
   }), /*#__PURE__*/React.createElement(Footer, {
     data: data
