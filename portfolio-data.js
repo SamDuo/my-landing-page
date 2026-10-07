@@ -756,6 +756,52 @@ window.PORTFOLIO_DATA = {
       ],
     },
   ],
+  // Short write-ups of results from work already done. Every claim here is one
+  // Sam has evidence for; none of it is speculative. Expand any entry into a
+  // full post by replacing `summary` and pointing `link` at it.
+  notes: [
+    {
+      date: "2026-09",
+      title: "Developers bunch just under the inclusionary threshold",
+      summary:
+        "Twelve projects proposed exactly nine units against a neighbourhood mean of 2.8, every one with zero inclusionary units, where the requirement starts at ten (Poisson p = 3.2e-5). A control threshold at 5,000 sq ft shows no bunching (p = 0.95), so this is the notch and not a general preference for small projects. This is a bunching estimator in the Saez and Kleven sense, and the method transfers to any jurisdiction with a unit-count trigger.",
+      tags: ["Housing policy", "Bunching", "Causal inference"],
+      link: "",
+    },
+    {
+      date: "2026-09",
+      title: "A grounded model will cite the right rule from the wrong city",
+      summary:
+        "On held-out cases a retrieval-grounded system attached a confidently wrong citation from the wrong jurisdiction every time. Tracing it showed the failure was in retrieval, not generation, and the fix was a governance gate that checks each citation against the jurisdiction it came from rather than a better model. Written up in a paper accepted at UrbanAI '26.",
+      tags: ["RAG", "Verification", "Evaluation"],
+      link: "https://github.com/SamDuo/polymetron-urbanai26-artifact",
+    },
+    {
+      date: "2026-09",
+      title: "Placebo tests killed four of my congestion-pricing findings",
+      summary:
+        "A triple-difference design over 344 million NYC trips found speeds up 5.1 percent and no detectable demand effect. Four other candidate findings did not survive placebo years and were dropped before write-up. The placebo step is the cheapest part of the analysis and the only reason the remaining result is worth stating.",
+      tags: ["Causal inference", "Transport", "Placebo design"],
+      link: "https://github.com/SamDuo/congestion-pricing-impact",
+    },
+    {
+      date: "2026-09",
+      title: "Who can get a retrofit in Georgia, and who cannot",
+      summary:
+        "Reconciling 33 Georgia Power programmes into per-county coverage across all 159 counties shows retrofit access correlating with community wellbeing at rho = +0.55. The counties that would benefit most from an efficiency upgrade are, on average, the ones with the fewest programmes available to them.",
+      tags: ["Energy", "Equity", "Georgia"],
+      link: "",
+    },
+    {
+      date: "2026-09",
+      title: "Raw grid data will tell you the peak is twice what it was",
+      summary:
+        "Working with EIA-930 balancing-authority data, a naive read of raw reported values gives peaks roughly double the corrected series. Any headroom or data-centre siting estimate built on the raw feed inherits that error. The quality checks have to come before the scenario, not after it.",
+      tags: ["Energy systems", "Data quality", "EIA-930"],
+      link: "https://github.com/SamDuo/grid-headroom-whatif",
+    },
+  ],
+
   publications: [
     {
       title: "AI for Urban Buildability: An Atlanta Zoning Case Study on Where Citation-Bound Verification Fails",

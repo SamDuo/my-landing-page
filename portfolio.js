@@ -921,6 +921,91 @@ function Credentials({
   }, it)))))));
 }
 
+// ─── Notes ───────────────────────────────────────────────────────────────────
+// Findings, not a blog engine. Entries live in portfolio-data.js like everything
+// else, so adding one is a data edit and a rebuild, with no Jekyll, no Gemfile
+// and no second toolchain to keep alive.
+function Notes({
+  data
+}) {
+  const notes = data.notes || [];
+  if (!notes.length) return null;
+  return /*#__PURE__*/React.createElement("section", {
+    id: "notes",
+    style: {
+      paddingTop: "clamp(3rem, 8vh, 5.5rem)"
+    }
+  }, /*#__PURE__*/React.createElement(SectionTitle, {
+    kicker: "Findings",
+    intro: "Short write-ups of results from the work, including the ones that did not survive their own robustness checks."
+  }, "Notes"), /*#__PURE__*/React.createElement("div", {
+    className: "sd-notes",
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, 1fr)",
+      gap: "1.2rem"
+    }
+  }, notes.map((n, i) => /*#__PURE__*/React.createElement("article", {
+    key: i,
+    style: {
+      border: "1px solid var(--line)",
+      borderRadius: 16,
+      padding: "1.3rem",
+      background: "var(--bg-2)",
+      display: "flex",
+      flexDirection: "column"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT_MONO,
+      fontSize: "0.64rem",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      color: "var(--muted)",
+      marginBottom: "0.7rem"
+    }
+  }, n.date), /*#__PURE__*/React.createElement("h3", {
+    style: {
+      ...DISPLAY,
+      fontWeight: 800,
+      fontSize: "1.35rem",
+      lineHeight: 1.08,
+      textTransform: "uppercase",
+      letterSpacing: "-0.015em",
+      margin: "0 0 0.7rem",
+      color: "var(--ink)"
+    }
+  }, n.link ? /*#__PURE__*/React.createElement("a", {
+    href: n.link,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: {
+      color: "inherit",
+      textDecoration: "none"
+    }
+  }, n.title, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "var(--accent)"
+    }
+  }, "\u2197")) : n.title), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: "0.97rem",
+      lineHeight: 1.6,
+      color: "var(--ink-2)",
+      margin: "0 0 1rem"
+    }
+  }, n.summary), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "0.35rem",
+      marginTop: "auto"
+    }
+  }, (n.tags || []).map(t => /*#__PURE__*/React.createElement(Chip, {
+    key: t
+  }, t)))))));
+}
+
 // ─── Resume ──────────────────────────────────────────────────────────────────
 function Resume({
   data
@@ -1011,7 +1096,7 @@ function Resume({
 }
 
 // ─── Nav + footer ────────────────────────────────────────────────────────────
-const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"], ["resume", "Resume"]];
+const NAV_ITEMS = [["research", "Research"], ["projects", "Projects"], ["experience", "Experience"], ["credentials", "Education"], ["notes", "Notes"], ["resume", "Resume"]];
 function Nav({
   name,
   theme,
@@ -1248,6 +1333,8 @@ function Portfolio() {
   }), /*#__PURE__*/React.createElement(Experience, {
     data: data
   }), /*#__PURE__*/React.createElement(Credentials, {
+    data: data
+  }), /*#__PURE__*/React.createElement(Notes, {
     data: data
   }), /*#__PURE__*/React.createElement(Resume, {
     data: data
