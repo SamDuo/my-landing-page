@@ -234,11 +234,6 @@ function Research({ data }) {
     <section id="research" style={{ paddingTop: "clamp(3rem, 8vh, 5.5rem)" }}>
       <SectionTitle kicker="Peer-reviewed and in progress" intro="Papers, methods and the question underneath them. Artifacts are public where the venue allows.">Research</SectionTitle>
 
-      <p style={{ fontSize: "1.06rem", lineHeight: 1.6, color: "var(--ink)", maxWidth: "62ch", margin: "0 0 1.6rem 0" }}>
-        I study how regulatory thresholds and infrastructure rules reshape what gets built,
-        and who carries the cost. The instruments I build are how I measure it.
-      </p>
-
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "2.4rem" }}>
         {METHODS.map((m) => <Chip key={m}>{m}</Chip>)}
       </div>

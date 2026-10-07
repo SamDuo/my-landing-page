@@ -350,15 +350,7 @@ function Research({
   }, /*#__PURE__*/React.createElement(SectionTitle, {
     kicker: "Peer-reviewed and in progress",
     intro: "Papers, methods and the question underneath them. Artifacts are public where the venue allows."
-  }, "Research"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      fontSize: "1.06rem",
-      lineHeight: 1.6,
-      color: "var(--ink)",
-      maxWidth: "62ch",
-      margin: "0 0 1.6rem 0"
-    }
-  }, "I study how regulatory thresholds and infrastructure rules reshape what gets built, and who carries the cost. The instruments I build are how I measure it."), /*#__PURE__*/React.createElement("div", {
+  }, "Research"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexWrap: "wrap",
